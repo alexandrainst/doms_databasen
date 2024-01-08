@@ -1,10 +1,10 @@
 """Code to read text from PDFs obtained from domsdatabasen.dk"""
 
+import re
 import tempfile
 from logging import getLogger
 from pathlib import Path
 from typing import List, Tuple, Union
-import re
 
 import cv2
 import easyocr
@@ -106,7 +106,6 @@ class PDFTextReader:
                 # don't try to find underline anonymization.
                 if anonymized_boxes:
                     underline_anonymization = False
-
 
             if underline_anonymization:
                 (
@@ -755,11 +754,6 @@ class PDFTextReader:
 
             row_min, col_min, row_max, col_max = underline
             height = row_max - row_min
-            if height > 20:
-                print("aloha")
-
-            binary[row_min:row_max + 1, col_min:col_max + 1] = 255
-            save_cv2_image_tmp(binary)
 
             expand = self.config.underline_box_expand
             box_row_min = row_min - self.config.underline_box_height
@@ -1147,7 +1141,7 @@ class PDFTextReader:
         """
         for underline in underlines:
             row_min, col_min, row_max, col_max = underline
-            image[row_min:row_max + 1, col_min:col_max + 1] = 0
+            image[row_min : row_max + 1, col_min : col_max + 1] = 0
         return image
 
     def _remove_text_in_anonymized_boxes(
@@ -1226,7 +1220,7 @@ class PDFTextReader:
         if not boxes:
             # Empty page supposedly
             return ""
-        
+
         # Remove multiple spaces
         boxes = [self._remove_multiple_spaces(box=box) for box in boxes]
 
@@ -1271,20 +1265,18 @@ class PDFTextReader:
         lines_ = [line for line in lines if not self._ignore_line(line)]
 
         # Join each line with \n.
-        page_text = "\n".join(
-            [self._join_line(line=line) for line in lines_]
-        ).strip()
+        page_text = "\n".join([self._join_line(line=line) for line in lines_]).strip()
         return page_text
-    
+
     def _remove_multiple_spaces(self, box: dict) -> dict:
         text_cleaned = re.sub(r" +", " ", box["text"])
         box["text"] = text_cleaned
         return box
-    
+
     def _removed_unwanted_boxes(self, line: List[dict]) -> List[dict]:
         """Remove unwanted boxes from line.
-        
-        Remove boxes that are not part of the main text. 
+
+        Remove boxes that are not part of the main text.
         For example, there might be an info box to the right of the main text.
         We want to remove this info box.
 
@@ -1311,7 +1303,7 @@ class PDFTextReader:
         col_start = box_first["coordinates"][1]
         if col_start > self.config.line_start_ignore_col:
             return []
-        
+
         line_ = [box_first]
         for j in range(i + 1, len(line)):
             box = line[j]
@@ -1325,7 +1317,7 @@ class PDFTextReader:
     def _join_line(self, line: List[dict]) -> str:
         """Join line of boxes together.
 
-        If boxes on a line are far apart, then join the boxes with tabs, 
+        If boxes on a line are far apart, then join the boxes with tabs,
         otherwise join the boxes with spaces.
 
         Args:
@@ -1346,10 +1338,10 @@ class PDFTextReader:
             sep = "\t" * n_tabs if n_tabs > 0 else " "
             line_text += f"{sep}{box['text']}"
         return line_text
-    
+
     def _box_distance(self, box_1: dict, box_2: dict) -> int:
         """Distance between two boxes.
-        
+
         The distance between the right side of box 1 and the left side of box 2.
         Box 1 must be to the left of box 2.
 
@@ -1365,7 +1357,7 @@ class PDFTextReader:
         """
         col_start_box_2 = box_2["coordinates"][1]
         col_end_box_1 = box_1["coordinates"][3]
-        return col_start_box_2 - col_end_box_1 
+        return col_start_box_2 - col_end_box_1
 
     def _ignore_line(self, line: List[dict]) -> bool:
         """Checks if line should be ignored.
@@ -1467,7 +1459,7 @@ class PDFTextReader:
         anonymized_box = {
             "coordinates": (row_min, col_min, row_max, col_max),
             "text": text,
-            "confidence": confidence
+            "confidence": confidence,
         }
         return anonymized_box
 
@@ -1568,6 +1560,8 @@ class PDFTextReader:
         text_all = " ".join(text for text in texts if text).strip()
 
         anonymized_box["text"] = f"<anonym>{text_all}</anonym>" if text_all else ""
+        if "Part A en" in anonymized_box["text"]:
+            print("aloha")
         return anonymized_box
 
     def _too_small(self, crop: np.ndarray, anonymized_box: dict) -> bool:
@@ -1619,8 +1613,14 @@ class PDFTextReader:
             box_first = boxes[0]
             text = box_first["text"]
             return text
-        
-        text = " ".join([box["text"] for box in boxes if box["confidence"] > self.config.threshold_box_confidence])
+
+        text = " ".join(
+            [
+                box["text"]
+                for box in boxes
+                if box["confidence"] > self.config.threshold_box_confidence
+            ]
+        )
         return text
 
     def _best_result(self, results: List[List[tuple]]) -> List[tuple]:
@@ -1647,7 +1647,7 @@ class PDFTextReader:
 
     def _result_score(self, result: List[tuple]) -> List[tuple]:
         """Calculates the score of a result.
-        
+
         The score is the average confidence score.
 
         Args:
@@ -1663,7 +1663,7 @@ class PDFTextReader:
         n_boxes = len(result)
 
         # Averge confidence score
-        score = sum(box[2] for box in result) * 1/n_boxes
+        score = sum(box[2] for box in result) * 1 / n_boxes
         return score
 
     def _sort_by_x(self, boxes: List[dict]) -> List[dict]:
@@ -1678,10 +1678,10 @@ class PDFTextReader:
                 List of boxes sorted by x coordinate.
         """
         return sorted(boxes, key=lambda box: box["coordinates"][1])
-    
+
     def _remove_inner_boxes(self, boxes: List[dict]) -> List[dict]:
         """Remove inner boxes.
-        
+
         If a box is inside another box, then remove the inner box.
 
         Args:
@@ -1730,7 +1730,7 @@ class PDFTextReader:
             if self._inside(box_1=box, box_2=box_):
                 return True
         return False
-    
+
     def _inside(self, box_1: dict, box_2: dict) -> bool:
         """Determine if box_1 is inside box_2.
 
@@ -1779,7 +1779,11 @@ class PDFTextReader:
         return crop
 
     def _process_crop_before_read(
-        self, crop: np.ndarray, binary_threshold: int, refine_padding: int = 0, cell: bool = False
+        self,
+        crop: np.ndarray,
+        binary_threshold: int,
+        refine_padding: int = 0,
+        cell: bool = False,
     ) -> np.ndarray:
         """Processes crop before reading text with easyocr.
 
@@ -1814,17 +1818,19 @@ class PDFTextReader:
         )
         if cell:
             return [crop_boundary]
-        
 
-        sharpened = np.array(skimage.filters.unsharp_mask(crop_scaled, radius=20, amount=1), dtype=np.uint8) * 255
+        sharpened = (
+            np.array(
+                skimage.filters.unsharp_mask(crop_scaled, radius=20, amount=1),
+                dtype=np.uint8,
+            )
+            * 255
+        )
         sharpened_boundary = self._add_boundary(
             image=sharpened, padding=self.config.anonymized_box_crop_padding
         )
 
-        crops_to_read = [
-            crop_boundary,
-            sharpened_boundary
-        ]
+        crops_to_read = [crop_boundary, sharpened_boundary]
 
         return crops_to_read
 
@@ -1964,16 +1970,54 @@ class PDFTextReader:
             if not self._conditions_for_box(blob):
                 continue
 
-            assert (
-                40 < blob.bbox[2] - blob.bbox[0] < 110
-            ), "Box height is not in expected range?"
+            box_coordinates = self._blob_to_box_coordinates(blob=blob)
+
             anonymized_box = {
-                "coordinates": [*blob.bbox],
+                "coordinates": box_coordinates,
                 "origin": self.config.origin_box,
             }
             anonymized_boxes.append(anonymized_box)
 
+            # draw_box(image=image.copy(), box=anonymized_box, pixel_value=255)
+
         return anonymized_boxes
+
+    def _blob_to_box_coordinates(self, blob: RegionProperties) -> List[int]:
+        """Convert blob to box coordinates.
+
+        Some times when boxes are splitted horizontally, a top box might
+        for example containt a long horizontal line in the bottom
+        that actually belongs to the bottom box. This functions removes
+        such lines.
+
+        Args:
+            blob (RegionProperties):
+                Blob to convert to box coordinates.
+
+        Returns:
+            List[int]:
+                Box coordinates.
+        """
+        assert (
+            40 < blob.bbox[2] - blob.bbox[0] < 110
+        ), "Box height is not in expected range?"
+
+        rows, cols = blob.coords.T
+        row_center, _ = blob.centroid
+        indices_upper = np.where(rows < row_center)[0]
+        indices_lower = np.where(rows > row_center)[0]
+
+        col_max_upper = cols[indices_upper].max()
+        col_max_lower = cols[indices_lower].max()
+
+        col_min_upper = cols[indices_upper].min()
+        col_min_lower = cols[indices_lower].min()
+
+        col_max = min(col_max_upper, col_max_lower) + 1
+        col_min = max(col_min_upper, col_min_lower)
+        row_min, _, row_max, _ = blob.bbox
+        box_coordinates = [row_min, col_min, row_max, col_max]
+        return box_coordinates
 
     def _conditions_for_box(self, blob: RegionProperties) -> bool:
         """Checks if conditions for box are met.
@@ -2083,10 +2127,17 @@ class PDFTextReader:
             else:
                 edges_grouped.append([edge])
 
-        groups_max_aggregated = [self._group_max(group=group, edge_lengths=edge_lengths) for group in edges_grouped]
-        rows_to_split = [row for row in groups_max_aggregated if edge_lengths[row] > self.config.indices_to_split_edge_min_length]
+        groups_max_aggregated = [
+            self._group_max(group=group, edge_lengths=edge_lengths)
+            for group in edges_grouped
+        ]
+        rows_to_split = [
+            row
+            for row in groups_max_aggregated
+            if edge_lengths[row] > self.config.indices_to_split_edge_min_length
+        ]
         return rows_to_split
-    
+
     def _group_max(self, group, edge_lengths):
         idx = group[0]
         for i in group[1:]:

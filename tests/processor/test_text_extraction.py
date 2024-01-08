@@ -159,19 +159,19 @@ def test_get_text_from_boxes(pdf_text_reader, boxes, text_expected):
         ),
         (
             "tests/data/processor/get_text_from_box_6.png",
-            {'coordinates': [2870, 552, 2919, 1137], "origin": "underline"},
+            {"coordinates": [2870, 552, 2919, 1137], "origin": "underline"},
             True,
             "<anonym>Kærende 9 tidligere Lejer 9</anonym>",
         ),
         (
             ("tests/data/processor/get_text_from_box_7.png"),
-            {'coordinates': [3016, 1063, 3065, 1159], "origin": "underline"},
+            {"coordinates": [3016, 1063, 3065, 1159], "origin": "underline"},
             True,
-            "<anonym>Navn</anonym>"
+            "<anonym>Navn</anonym>",
         ),
         (
             ("tests/data/processor/get_text_from_box_7.png"),
-            {'coordinates': [3016, 389, 3065, 641], "origin": "underline"},
+            {"coordinates": [3016, 389, 3065, 641], "origin": "underline"},
             True,
             "<anonym>Tiltaltelsigtede</anonym>",
         ),
@@ -180,7 +180,7 @@ def test_get_text_from_boxes(pdf_text_reader, boxes, text_expected):
             {"coordinates": [1886, 1112, 1942, 1229], "origin": "box"},
             False,
             "<anonym>P1</anonym>",
-        )
+        ),
     ],
 )
 def test_read_text_from_anonymized_box(
@@ -237,7 +237,7 @@ def test_remove_boundary_noise(pdf_text_reader, config, image_path):
         (
             "tests/data/processor/box_with_multiple_words_2.png",
             1,
-        )
+        ),
     ],
 )
 def test_get_split_indices(pdf_text_reader, image_path, n_splits_expected):
