@@ -29,6 +29,7 @@ from src.doms_databasen.constants import (
     DPI,
     LENGTH_SIX_LETTERS,
     TAB_PIXEL_LENGTH,
+    NEW_LINE_PIXEL_LENGTH,
 )
 
 logger = getLogger(__name__)
@@ -1264,11 +1265,95 @@ class PDFTextReader:
         # For example, ignore page numbers.
         lines_ = [line for line in lines if not self._ignore_line(line)]
 
+
+        page_text = self._lines_to_page_text(lines=lines_)
+
         # Join each line with \n.
-        page_text = "\n".join([self._join_line(line=line) for line in lines_]).strip()
+        # page_text = "\n".join([self._join_line(line=line) for line in lines_]).strip()
         return page_text
 
+    def _lines_to_page_text(self, lines: List[List[dict]]) -> str:
+        """Convert lines to page text.
+        
+        Args:
+            lines (List[List[dict]]):
+                List of lines, where each line is a list of boxes.
+
+        Returns:
+            page_text (str):
+                Text from current page.    
+        """
+        text_first_line = self._join_line(line=lines[0])
+        page_text = text_first_line
+
+        for i in range(1, len(lines)):
+            line = lines[i]
+            line_prev = lines[i - 1]
+            distance = self._distance_between_lines(line_1=line, line_2=line_prev)
+            n_newlines = distance // NEW_LINE_PIXEL_LENGTH or 1
+            text_line = self._join_line(line=line)
+            page_text += f"\n" * n_newlines + text_line
+        return page_text
+
+    def _distance_between_lines(self, line_1: List[dict], line_2: List[dict]) -> int:
+        """Distance between two lines.
+        
+        Args:
+            line_1 (List[dict]):
+                List of boxes on first line.
+            line_2 (List[dict]):
+                List of boxes on second line.
+
+        Returns:
+            int:
+                Distance between two lines.
+        """
+        box = line_1[0]
+        box_prev = line_2[0]
+        return int(self._box_distance_horizontal(box_1=box, box_2=box_prev))
+
+    def _box_distance_horizontal(self, box_1: dict, box_2: dict) -> int:
+        """Horizontal distance between two boxes.
+        
+        Args:
+            box_1 (dict):
+                Anonymized box with coordinates.
+            box_2 (dict):
+                Anonymized box with coordinates.
+
+        Returns:
+            int:
+                Horizontal distance between two boxes.
+        """
+        mid_1 = self._middle_row_cordinate(box_1)
+        mid_2 = self._middle_row_cordinate(box_2)
+        return abs(mid_1 - mid_2)
+
+    def _middle_row_cordinate(self, box: dict) -> int:
+        """Middle row coordinate of box.
+        
+        Args:
+            box (dict):
+                Anonymized box with coordinates.
+
+        Returns:    
+            int:
+                Middle row coordinate of box.
+        """
+        row_min, _, row_max, _ = box["coordinates"]
+        return (row_min + row_max) // 2
+
     def _remove_multiple_spaces(self, box: dict) -> dict:
+        """Remove multiple spaces from box text.
+
+        Args:
+            box (dict):
+                Anonymized box with text.
+
+        Returns:
+            box (dict):
+                Anonymized box with text, where multiple spaces are removed.
+        """
         text_cleaned = re.sub(r" +", " ", box["text"])
         box["text"] = text_cleaned
         return box
