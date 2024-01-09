@@ -1265,11 +1265,8 @@ class PDFTextReader:
         # For example, ignore page numbers.
         lines_ = [line for line in lines if not self._ignore_line(line)]
 
-
         page_text = self._lines_to_page_text(lines=lines_)
 
-        # Join each line with \n.
-        # page_text = "\n".join([self._join_line(line=line) for line in lines_]).strip()
         return page_text
 
     def _lines_to_page_text(self, lines: List[List[dict]]) -> str:
