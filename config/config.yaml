@@ -51,9 +51,11 @@ anonymized_box_crop_padding: 3
 refine_box_padding: 2
 
 make_split_between_overlapping_box_and_line_height_max: 30
-make_split_between_overlapping_box_and_line_width: 10
+make_split_between_overlapping_box_and_line_width: 12
 
-threshold_binarize_process: 100
+box_split_delta: 2
+
+threshold_binarize_process: 50
 threshold_binarize_anonymized_boxes: 75
 threshold_binarize_split_indices: 100
 threshold_binarize_empty_box: 100

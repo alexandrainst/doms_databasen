@@ -2075,7 +2075,7 @@ class PDFTextReader:
                 
                 # Split
                 for row_idx in row_indices_to_split:
-                    row_idx_ = row_min + row_idx # - 2
+                    row_idx_ = row_min + row_idx - self.config.box_split_delta
                     inverted[row_idx_, col_min:col_max + 1] = 0
 
         return inverted
