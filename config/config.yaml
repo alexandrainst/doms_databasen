@@ -53,6 +53,7 @@ refine_box_padding: 2
 make_split_between_overlapping_box_and_line_height_max: 30
 make_split_between_overlapping_box_and_line_width: 10
 
+threshold_binarize_process: 100
 threshold_binarize_anonymized_boxes: 75
 threshold_binarize_split_indices: 100
 threshold_binarize_empty_box: 100
@@ -64,6 +65,7 @@ threshold_remove_boundary_height: 20
 threshold_remove_boundary_length: 50
 threshold_remove_boundary_closely_square: 3
 threshold_remove_boundary_too_few_pixels: 10
+
 
 threshold_footnote_height: 30 # Some less than box height lb
 
@@ -141,7 +143,7 @@ scrape:
 # Process arguments
 process:
   force: True
-  case_id: "1116"
+  case_id: "335"
   all: False
   messages:
     give_correct_input: >
