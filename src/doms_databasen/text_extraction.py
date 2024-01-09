@@ -1955,7 +1955,7 @@ class PDFTextReader:
         inverted_boxes_split = self._split_boxes_in_image(inverted=inverted.copy())
 
         binary_splitted = self._make_split_between_overlapping_box_and_line(
-            binary=inverted_boxes_split
+            binary=inverted_boxes_split.copy()
         )
 
         sort_function = lambda blob: blob.area
@@ -1977,8 +1977,6 @@ class PDFTextReader:
                 "origin": self.config.origin_box,
             }
             anonymized_boxes.append(anonymized_box)
-
-            # draw_box(image=image.copy(), box=anonymized_box, pixel_value=255)
 
         return anonymized_boxes
 
@@ -2073,12 +2071,12 @@ class PDFTextReader:
                     blob_image=blob_image
                 )
 
+                row_min, col_min, row_max, col_max = blob.bbox
+                
                 # Split
                 for row_idx in row_indices_to_split:
-                    blob_image[row_idx, :] = 0
-
-                # Overwrite original sub image with modified sub image
-                inverted[row_min:row_max, col_min:col_max] = blob_image
+                    row_idx_ = row_min + row_idx # - 2
+                    inverted[row_idx_, col_min:col_max + 1] = 0
 
         return inverted
 
@@ -2139,6 +2137,7 @@ class PDFTextReader:
         return rows_to_split
 
     def _group_max(self, group, edge_lengths):
+        # TODO
         idx = group[0]
         for i in group[1:]:
             if edge_lengths[i] > edge_lengths[idx]:
