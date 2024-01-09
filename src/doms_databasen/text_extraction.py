@@ -28,8 +28,8 @@ from src.doms_databasen.constants import (
     BOX_HEIGHT_LOWER_BOUND,
     DPI,
     LENGTH_SIX_LETTERS,
-    TAB_PIXEL_LENGTH,
     NEW_LINE_PIXEL_LENGTH,
+    TAB_PIXEL_LENGTH,
 )
 
 logger = getLogger(__name__)
@@ -1093,7 +1093,10 @@ class PDFTextReader:
         filled[filled < 5] = 0
         opened = cv2.morphologyEx(filled, cv2.MORPH_OPEN, np.ones((30, 30)))
         opened_binary = self._binarize(
-            image=opened, threshold=self.config.threshold_binarize_process, val_min=0, val_max=255
+            image=opened,
+            threshold=self.config.threshold_binarize_process,
+            val_min=0,
+            val_max=255,
         )
         opened_binary_dilated = cv2.dilate(opened_binary, np.ones((3, 3)))
 
@@ -1271,14 +1274,14 @@ class PDFTextReader:
 
     def _lines_to_page_text(self, lines: List[List[dict]]) -> str:
         """Convert lines to page text.
-        
+
         Args:
             lines (List[List[dict]]):
                 List of lines, where each line is a list of boxes.
 
         Returns:
             page_text (str):
-                Text from current page.    
+                Text from current page.
         """
         text_first_line = self._join_line(line=lines[0])
         page_text = text_first_line
@@ -1294,7 +1297,7 @@ class PDFTextReader:
 
     def _distance_between_lines(self, line_1: List[dict], line_2: List[dict]) -> int:
         """Distance between two lines.
-        
+
         Args:
             line_1 (List[dict]):
                 List of boxes on first line.
@@ -1311,7 +1314,7 @@ class PDFTextReader:
 
     def _box_distance_horizontal(self, box_1: dict, box_2: dict) -> int:
         """Horizontal distance between two boxes.
-        
+
         Args:
             box_1 (dict):
                 Anonymized box with coordinates.
@@ -1328,12 +1331,12 @@ class PDFTextReader:
 
     def _middle_row_cordinate(self, box: dict) -> int:
         """Middle row coordinate of box.
-        
+
         Args:
             box (dict):
                 Anonymized box with coordinates.
 
-        Returns:    
+        Returns:
             int:
                 Middle row coordinate of box.
         """
@@ -2154,11 +2157,11 @@ class PDFTextReader:
                 )
 
                 row_min, col_min, row_max, col_max = blob.bbox
-                
+
                 # Split
                 for row_idx in row_indices_to_split:
                     row_idx_ = row_min + row_idx - self.config.box_split_delta
-                    inverted[row_idx_, col_min:col_max + 1] = 0
+                    inverted[row_idx_, col_min : col_max + 1] = 0
 
         return inverted
 
