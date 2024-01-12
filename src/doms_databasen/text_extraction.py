@@ -457,6 +457,7 @@ class PDFTextReader:
         table_box = {
             "coordinates": (row_min, col_min, row_max, col_max),
             "text": table_string,
+            "shape": table.df.shape
         }
         return table_box
 
@@ -2831,8 +2832,13 @@ class PDFTextExtractor:
         return text.strip()
 
     @staticmethod
-    def pypdf(pdf_path: str):
+    def pypdf(pdf_path: str, page_num: int = None):
         reader = PdfReader(pdf_path)
+        
+        if page_num is not None:
+            page = reader.pages[page_num]
+            return page.extract_text()
+        
         text = ""
         for page in reader.pages:
             text += page.extract_text() + "\n\n"

@@ -316,6 +316,7 @@ def test_remove_logo(pdf_text_reader, image_path, difference_flag_expected):
 def test_find_tables(
     pdf_text_reader, image_path, n_tables_expected, texts_in_table_expected, invert
 ):
+    # TODO: make checks for shape of tables
     image = read_image(image_path)
     if invert:
         image = cv2.bitwise_not(image)
