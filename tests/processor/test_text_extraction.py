@@ -294,33 +294,32 @@ def test_remove_logo(pdf_text_reader, image_path, difference_flag_expected):
             1,
             ["Geografisk", "Medlemsstat", "Fiskeriart"],
             True,
-            (4, 4)
+            (4, 4),
         ),
         (
             "tests/data/processor/image_processed_find_tables_2.png",
             1,
             ["Eng.nr.", "Navn", "+500"],
             True,
-            (2, 4)
+            (2, 4),
         ),
-        (
-            "tests/data/processor/image_processed_with_no_tables.png",
-            0,
-            [],
-            True,
-            None
-        ),
+        ("tests/data/processor/image_processed_with_no_tables.png", 0, [], True, None),
         (
             "tests/data/processor/page_with_table_1.png",
             1,
             ["DKK", "Indkomst før genoptagelse"],
             False,
-            (4, 2)
+            (4, 2),
         ),
     ],
 )
 def test_find_tables(
-    pdf_text_reader, image_path, n_tables_expected, texts_in_table_expected, invert, shape_expected
+    pdf_text_reader,
+    image_path,
+    n_tables_expected,
+    texts_in_table_expected,
+    invert,
+    shape_expected,
 ):
     image = read_image(image_path)
     if invert:

@@ -139,7 +139,9 @@ class PDFTextReader:
             )
 
             image_processed_inverted = cv2.bitwise_not(image_processed)
-            table_boxes = self._find_tables(image=image_processed_inverted, read_tables=True)
+            table_boxes = self._find_tables(
+                image=image_processed_inverted, read_tables=True
+            )
 
             image_final = self._remove_tables(
                 image=image_processed, table_boxes=table_boxes
@@ -363,7 +365,7 @@ class PDFTextReader:
         images = map(lambda image: cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), images)
         return images
 
-    def _find_tables(self, image: np.ndarray, read_tables: bool=False) -> List[dict]:
+    def _find_tables(self, image: np.ndarray, read_tables: bool = False) -> List[dict]:
         """Extract tables from the image.
 
         Args:
@@ -460,7 +462,7 @@ class PDFTextReader:
         table_box = {
             "coordinates": (row_min, col_min, row_max, col_max),
             "text": table_string,
-            "shape": table.df.shape
+            "shape": table.df.shape,
         }
         return table_box
 
@@ -514,7 +516,9 @@ class PDFTextReader:
             ):
                 continue
 
-            crop_cleaned = self._remove_boundary_noise(crop=crop, binary_threshold=self.config.threshold_binarize_empty_box)
+            crop_cleaned = self._remove_boundary_noise(
+                crop=crop, binary_threshold=self.config.threshold_binarize_empty_box
+            )
             if self._empty_image(
                 image=crop_cleaned,
                 binarize_threshold=self.config.threshold_binarize_empty_box,
@@ -1592,7 +1596,10 @@ class PDFTextReader:
             anonymized_box["text"] = ""
             return anonymized_box
 
-        crop_cleaned = self._remove_boundary_noise(crop=crop.copy(), binary_threshold=self.config.threshold_binarize_process_crop)
+        crop_cleaned = self._remove_boundary_noise(
+            crop=crop.copy(),
+            binary_threshold=self.config.threshold_binarize_process_crop,
+        )
         if self._empty_image(
             image=crop_cleaned,
             binarize_threshold=self.config.threshold_binarize_process_crop,
@@ -2074,7 +2081,7 @@ class PDFTextReader:
                 "origin": self.config.origin_box,
             }
             anonymized_boxes.append(anonymized_box)
-            
+
         return anonymized_boxes
 
     def _blob_to_box_coordinates(self, blob: RegionProperties) -> List[int]:
@@ -2461,7 +2468,9 @@ class PDFTextReader:
         binary[binary >= t] = val_max
         return binary
 
-    def _remove_boundary_noise(self, crop: np.ndarray, binary_threshold: int) -> np.ndarray:
+    def _remove_boundary_noise(
+        self, crop: np.ndarray, binary_threshold: int
+    ) -> np.ndarray:
         """Removes noise on the boundary of an anonymized box.
 
         All white pixels in a perfect bounding box should be a pixel of a relevant character.
@@ -2845,11 +2854,11 @@ class PDFTextExtractor:
     @staticmethod
     def pypdf(pdf_path: str, page_num: int = None):
         reader = PdfReader(pdf_path)
-        
+
         if page_num is not None:
             page = reader.pages[page_num]
             return page.extract_text()
-        
+
         text = ""
         for page in reader.pages:
             text += page.extract_text() + "\n\n"
