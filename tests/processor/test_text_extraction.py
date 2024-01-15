@@ -34,7 +34,8 @@ def pdf_text_reader(config):
     ],
 )
 def test_extract_text(pdf_text_reader, pdf_path, expected_text):
-    text, _ = pdf_text_reader.extract_text(pdf_path=pdf_path)
+    pdf_data = pdf_text_reader.extract_text(pdf_path=pdf_path)
+    text = pdf_text_reader._get_text_from_pages(pdf_data["pages"])
     assert text == expected_text
 
 
@@ -204,6 +205,7 @@ def test_read_text_from_anonymized_box(
         ("tests/data/processor/page_with_boxes_6.png", 14),
         ("tests/data/processor/page_with_boxes_7.png", 29),  # Case 604
         ("tests/data/processor/page_with_boxes_8.png", 19),  # Case 555 page 1
+        ("tests/data/processor/page_with_boxes_9.png", 11),  # Case 2508 page 1
     ],
 )
 def test_find_anonymized_boxes(pdf_text_reader, image_path, n_matches_expected):
@@ -213,16 +215,16 @@ def test_find_anonymized_boxes(pdf_text_reader, image_path, n_matches_expected):
 
 
 @pytest.mark.parametrize(
-    "image_path",
+    "image_path, binary_threshold",
     [
-        ("tests/data/processor/boundary_noise_1.png"),
-        ("tests/data/processor/boundary_noise_2.png"),
+        ("tests/data/processor/boundary_noise_1.png", 200),
+        ("tests/data/processor/boundary_noise_2.png", 200),
     ],
 )
-def test_remove_boundary_noise(pdf_text_reader, config, image_path):
+def test_remove_boundary_noise(pdf_text_reader, config, image_path, binary_threshold):
     image = read_image(image_path)
     N, M = image.shape
-    image_clean = pdf_text_reader._remove_boundary_noise(image.copy())
+    image_clean = pdf_text_reader._remove_boundary_noise(image.copy(), binary_threshold)
     assert (image_clean[:, 0] <= config.threshold_binarize_process_crop).all()
     assert (image_clean[:, M - 1] <= config.threshold_binarize_process_crop).all()
     assert (image_clean[0, :] <= config.threshold_binarize_process_crop).all()
@@ -285,44 +287,50 @@ def test_remove_logo(pdf_text_reader, image_path, difference_flag_expected):
 
 
 @pytest.mark.parametrize(
-    "image_path, n_tables_expected, texts_in_table_expected, invert",
+    "image_path, n_tables_expected, texts_in_table_expected, invert, shape_expected",
     [
         (
             "tests/data/processor/image_processed_find_tables_1.png",
             1,
             ["Geografisk", "Medlemsstat", "Fiskeriart"],
             True,
+            (4, 4)
         ),
         (
             "tests/data/processor/image_processed_find_tables_2.png",
             1,
             ["Eng.nr.", "Navn", "+500"],
             True,
+            (2, 4)
         ),
         (
             "tests/data/processor/image_processed_with_no_tables.png",
             0,
             [],
             True,
+            None
         ),
         (
             "tests/data/processor/page_with_table_1.png",
             1,
             ["DKK", "Indkomst før genoptagelse"],
             False,
+            (4, 2)
         ),
     ],
 )
 def test_find_tables(
-    pdf_text_reader, image_path, n_tables_expected, texts_in_table_expected, invert
+    pdf_text_reader, image_path, n_tables_expected, texts_in_table_expected, invert, shape_expected
 ):
-    # TODO: make checks for shape of tables
     image = read_image(image_path)
     if invert:
         image = cv2.bitwise_not(image)
-    table_boxes = pdf_text_reader._find_tables(image=image)
+    table_boxes = pdf_text_reader._find_tables(image=image, read_tables=True)
     assert len(table_boxes) == n_tables_expected
-    assert all(text in table_boxes[0]["text"] for text in texts_in_table_expected)
+    if n_tables_expected == 1:
+        table = table_boxes[0]
+        assert table["shape"] == shape_expected
+        assert all(text in table["text"] for text in texts_in_table_expected)
 
 
 @pytest.mark.parametrize(
@@ -341,4 +349,4 @@ def test_get_row_indices_to_split(pdf_text_reader, image_path, rows_to_split_exp
 
 
 if __name__ == "__main__":
-    pytest.main([__file__ + "::test_read_text_from_anonymized_box", "-s"])
+    pytest.main([__file__ + "::test_find_anonymized_boxes", "-s"])

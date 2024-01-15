@@ -11,7 +11,7 @@ domsdatabasen:
 paths:
   download_dir: download_tmp/
   data_raw_dir: data/raw/
-  data_processed_dir: data/processed/
+  data_processed_dir: /mnt/data_6tb/oliver/doms_databasen/data/processed
   data_final_dir: data/final/
   test_tmp_dir: tmp/
   # Paths for testing the processor
@@ -43,6 +43,7 @@ box_accept_ratio: 0.6
 slight_shift_to_bottom: 5
 iou_overlap_threshold: 0.5
 indices_to_split_edge_min_length: 5
+edge_accept_ratio: 0.95
 indices_to_split_row_diff: 50
 max_scale: 1.5
 
@@ -90,10 +91,10 @@ max_expand_steps: 10
 
 remove_cell_border: 5
 cell_box_shrink: 5
-cell_box_crop_padding: 21
+cell_box_crop_padding: 3
 cell_multiple_lines_gap_threshold: 10
 
-table_format: grid
+table_format: orgtbl
 remove_table_border: 7
 threshold_binarize_process_before_table_search: 1
 
@@ -145,7 +146,7 @@ scrape:
 # Process arguments
 process:
   force: True
-  case_id: "335"
+  case_id: "2508"
   all: False
   messages:
     give_correct_input: >

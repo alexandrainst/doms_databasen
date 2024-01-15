@@ -121,8 +121,8 @@ class PDFTextReader:
 
             # Use a pdf reader if no signs of anonymization are found.
             if not anonymized_boxes and not anonymized_boxes_underlines:
-                table_boxes = self._find_tables(image=image.copy())
-                if not table_boxes:
+                tables = self._find_tables(image=image.copy(), read_tables=False)
+                if not tables:
                     current_page = pdf_reader.pages[i]
                     page_text = current_page.extract_text()
                     pages[i]["text"] = page_text.strip()
@@ -137,9 +137,9 @@ class PDFTextReader:
                 anonymized_boxes=all_anonymized_boxes,
                 underlines=underlines,
             )
-            if not table_boxes:
-                image_processed_inverted = cv2.bitwise_not(image_processed)
-                table_boxes = self._find_tables(image=image_processed_inverted)
+
+            image_processed_inverted = cv2.bitwise_not(image_processed)
+            table_boxes = self._find_tables(image=image_processed_inverted, read_tables=True)
 
             image_final = self._remove_tables(
                 image=image_processed, table_boxes=table_boxes
@@ -154,13 +154,12 @@ class PDFTextReader:
             pages[i]["text"] = page_text.strip()
             pages[i]["extraction_method"] = "easyocr"
 
-        pdf_text = self._get_text_from_pages(pages=pages)
         pdf_data = self._pdf_data(
             pages=pages,
             box_anonymization=box_anonymization,
             underline_anonymization=underline_anonymization,
         )
-        return pdf_text.strip(), pdf_data
+        return pdf_data
 
     def _pdf_data(
         self, pages: dict, box_anonymization: bool, underline_anonymization: bool
@@ -364,7 +363,7 @@ class PDFTextReader:
         images = map(lambda image: cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), images)
         return images
 
-    def _find_tables(self, image: np.ndarray) -> List[dict]:
+    def _find_tables(self, image: np.ndarray, read_tables: bool=False) -> List[dict]:
         """Extract tables from the image.
 
         Args:
@@ -381,6 +380,9 @@ class PDFTextReader:
             cv2.imwrite(tmp.name, image)
             table_image = TableImage(src=tmp.name, detect_rotation=False)
             tables = table_image.extract_tables()
+
+        if not read_tables:
+            return tables
 
         for table in tables:
             self._read_table(table=table, image=image)
@@ -453,6 +455,7 @@ class PDFTextReader:
         table_string = tabulate(
             table.df, showindex="never", tablefmt=self.config.table_format
         )
+        table_string = "<table>\n" + table_string + "\n</table>"
 
         table_box = {
             "coordinates": (row_min, col_min, row_max, col_max),
@@ -510,8 +513,16 @@ class PDFTextReader:
                 image=crop, binarize_threshold=self.config.threshold_binarize_empty_box
             ):
                 continue
+
+            crop_cleaned = self._remove_boundary_noise(crop=crop, binary_threshold=self.config.threshold_binarize_empty_box)
+            if self._empty_image(
+                image=crop_cleaned,
+                binarize_threshold=self.config.threshold_binarize_empty_box,
+            ):
+                continue
+
             crops_to_read = self._process_crop_before_read(
-                crop=crop,
+                crop=crop_cleaned,
                 binary_threshold=self.config.threshold_binarize_empty_box,
                 refine_padding=self.config.cell_box_crop_padding,
                 cell=True,
@@ -874,9 +885,10 @@ class PDFTextReader:
         edges = self._get_vertical_edges(binary=binary)
         sort_function = lambda blob: blob.bbox[2] - blob.bbox[0]
         edge_blobs = self._get_blobs(binary=edges, sort_function=sort_function)
-        heights = []
 
         for blob in edge_blobs:
+            if not blob.area_convex / blob.area_bbox > self.config.edge_accept_ratio:
+                continue
             row_min, col_min, row_max, col_max = blob.bbox
             height = row_max - row_min
             if (
@@ -884,7 +896,6 @@ class PDFTextReader:
                 < self.config.make_split_between_overlapping_box_and_line_height_max
             ):
                 break
-            heights.append(height)
 
             row_min, col_min, row_max, col_max = blob.bbox
             p = self.config.make_split_between_overlapping_box_and_line_width
@@ -1581,7 +1592,7 @@ class PDFTextReader:
             anonymized_box["text"] = ""
             return anonymized_box
 
-        crop_cleaned = self._remove_boundary_noise(crop=crop.copy())
+        crop_cleaned = self._remove_boundary_noise(crop=crop.copy(), binary_threshold=self.config.threshold_binarize_process_crop)
         if self._empty_image(
             image=crop_cleaned,
             binarize_threshold=self.config.threshold_binarize_process_crop,
@@ -1646,8 +1657,6 @@ class PDFTextReader:
         text_all = " ".join(text for text in texts if text).strip()
 
         anonymized_box["text"] = f"<anonym>{text_all}</anonym>" if text_all else ""
-        if "Part A en" in anonymized_box["text"]:
-            print("aloha")
         return anonymized_box
 
     def _too_small(self, crop: np.ndarray, anonymized_box: dict) -> bool:
@@ -2025,7 +2034,7 @@ class PDFTextReader:
 
         # Mean filter to make text outside boxes
         # brigther than color of boxes.
-        footprint = np.ones((1, 15))
+        footprint = np.ones((5, 5))
         averaged = rank.mean(image, footprint=footprint)
 
         binary = self._binarize(
@@ -2034,6 +2043,7 @@ class PDFTextReader:
             val_min=0,
             val_max=255,
         )
+
         inverted = cv2.bitwise_not(binary)
 
         # Some boxes are overlapping (horizontally).
@@ -2049,12 +2059,16 @@ class PDFTextReader:
 
         anonymized_boxes = []
         for blob in blobs:
+
             if blob.area < self.config.box_area_min:
                 # Blob is too small to be considered an anonymized box.
                 break
 
-            if not self._conditions_for_box(blob):
+            if not self._conditions_for_box(blob=blob):
                 continue
+
+            if not( 40 < blob.bbox[2] - blob.bbox[0] < 110):
+                print("aloha")
 
             box_coordinates = self._blob_to_box_coordinates(blob=blob)
 
@@ -2063,6 +2077,7 @@ class PDFTextReader:
                 "origin": self.config.origin_box,
             }
             anonymized_boxes.append(anonymized_box)
+            draw_box(image=binary_splitted, box=anonymized_box)
 
         return anonymized_boxes
 
@@ -2450,7 +2465,7 @@ class PDFTextReader:
         binary[binary >= t] = val_max
         return binary
 
-    def _remove_boundary_noise(self, crop: np.ndarray) -> np.ndarray:
+    def _remove_boundary_noise(self, crop: np.ndarray, binary_threshold: int) -> np.ndarray:
         """Removes noise on the boundary of an anonymized box.
 
         All white pixels in a perfect bounding box should be a pixel of a relevant character.
@@ -2468,7 +2483,7 @@ class PDFTextReader:
 
         binary_crop = self._binarize(
             image=crop,
-            threshold=self.config.threshold_binarize_process_crop,
+            threshold=binary_threshold,
             val_min=0,
             val_max=255,
         )
