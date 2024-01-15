@@ -2067,9 +2067,6 @@ class PDFTextReader:
             if not self._conditions_for_box(blob=blob):
                 continue
 
-            if not( 40 < blob.bbox[2] - blob.bbox[0] < 110):
-                print("aloha")
-
             box_coordinates = self._blob_to_box_coordinates(blob=blob)
 
             anonymized_box = {
@@ -2077,8 +2074,7 @@ class PDFTextReader:
                 "origin": self.config.origin_box,
             }
             anonymized_boxes.append(anonymized_box)
-            draw_box(image=binary_splitted, box=anonymized_box)
-
+            
         return anonymized_boxes
 
     def _blob_to_box_coordinates(self, blob: RegionProperties) -> List[int]:
