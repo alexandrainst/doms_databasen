@@ -94,7 +94,6 @@ cell_box_shrink: 5
 cell_box_crop_padding: 3
 cell_multiple_lines_gap_threshold: 10
 
-table_format: orgtbl
 remove_table_border: 7
 threshold_binarize_process_before_table_search: 1
 

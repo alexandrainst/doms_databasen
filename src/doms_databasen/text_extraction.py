@@ -21,7 +21,6 @@ from pypdf import PdfReader
 from skimage import measure
 from skimage.filters import rank
 from skimage.measure._regionprops import RegionProperties
-from tabulate import tabulate
 from tika import parser
 
 from src.doms_databasen.constants import (
@@ -454,10 +453,7 @@ class PDFTextReader:
         """
         row_min, col_min, row_max, col_max = self._get_coordinates(table_or_cell=table)
 
-        table_string = tabulate(
-            table.df, showindex="never", tablefmt=self.config.table_format
-        )
-        table_string = "<table>\n" + table_string + "\n</table>"
+        table_string = self._table_string(table=table)
 
         table_box = {
             "coordinates": (row_min, col_min, row_max, col_max),
@@ -465,6 +461,24 @@ class PDFTextReader:
             "shape": table.df.shape,
         }
         return table_box
+    
+    def _table_string(self, table: ExtractedTable) -> str:
+        """Convert table to string.
+
+        Args:
+            table (ExtractedTable):
+                Table to convert.
+
+        Returns:
+            table_string (str):
+                Table as string (markdown format).
+        """
+        df = table.df
+        df.columns = ["" for _ in range(len(df.columns))]
+
+        table_string = df.to_markdown(index=False, headers=[])
+        table_string = "<table>\n" + table_string + "\n</table>"
+        return table_string
 
     def _read_table(self, table: ExtractedTable, image: np.ndarray) -> None:
         """Read text in table.
@@ -533,10 +547,13 @@ class PDFTextReader:
             )
 
             text = self._read_text_from_crop(crops=crops_to_read, cell=True)
-            all_text += f"{text}\n"
+            if all_text and all_text[-1] == "-":
+                all_text = all_text[:-1]
+                sep = ""
+            else:
+                sep = " "
+            all_text += f"{sep}{text}"
 
-        # Remove last newline character
-        all_text = all_text[:-1] if all_text[-1] == "\n" else all_text
         cell.value = all_text
 
     def _empty_image(self, image: np.ndarray, binarize_threshold: int) -> bool:
