@@ -74,19 +74,18 @@ class Processor(PDFTextReader):
         tabular_data = read_json(case_dir_raw / self.config.file_names.tabular_data)
 
         processed_data = {}
-        processed_data["tabular_data"] = tabular_data
         processed_data["case_id"] = case_id
+        processed_data["tabular_data"] = tabular_data
+
         pdf_path = case_dir_raw / self.config.file_names.pdf_document
-        text_anonymized, pdf = self.extract_text(
+        pdf_data = self.extract_text(
             pdf_path=pdf_path,
         )
-
-        processed_data["text_anon_tagged"] = text_anonymized
-        processed_data["pdf"] = pdf
+        processed_data["pdf_data"] = pdf_data
 
         # Remove anonymization tags from text.
-        text = re.sub(r"<anonym.*</anonym>", "", text_anonymized)
-        processed_data["text"] = text
+        # TODO: Just do this in finalize.
+        # text = re.sub(r"<anonym.*</anonym>", "", text_anonymized)
 
         if not self.config.testing:
             save_dict_to_json(
