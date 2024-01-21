@@ -18,7 +18,7 @@ def processed_data(config, processor):
 
 @pytest.mark.parametrize(
     "key",
-    ["tabular_data", "case_id", "text", "text_anon_tagged", "pdf"],
+    ["case_id", "tabular_data", "pdf_data"],
 )
 def test_tabular_data(processed_data, key):
     assert processed_data[key]
