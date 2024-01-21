@@ -83,7 +83,10 @@ class Processor(PDFTextReader):
             pdf_path=pdf_path,
         )
         processed_data["pdf_data"] = pdf_data
-        processed_data["process_time"] = time.time() - start
+        processed_data["process_info"] = {
+            "process_time": time.time() - start,
+            "hardware_used": "gpu" if self.config.gpu else "cpu",
+                                          }
 
         # Remove anonymization tags from text.
         # TODO: Just do this in finalize.
