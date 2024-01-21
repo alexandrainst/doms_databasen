@@ -132,8 +132,14 @@ class DomsDatabasenScraper:
         at case ID 1, and scraping will stop when a number of consecutive
         non-existent pages have been encountered.
         """
-        case_id = 1 if not self.config.scrape.start_case_id else int(self.config.scrape.start_case_id)
-        logger.info("Scraping all cases starting at case ID {case_id}. Change 'scrape.start_case_id' to None to start at 1")
+        case_id = (
+            1
+            if not self.config.scrape.start_case_id
+            else int(self.config.scrape.start_case_id)
+        )
+        logger.info(
+            "Scraping all cases starting at case ID {case_id}. Change 'scrape.start_case_id' to None to start at 1"
+        )
 
         while (
             self.consecutive_nonexistent_page_count
