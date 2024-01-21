@@ -461,7 +461,7 @@ class PDFTextReader:
             "shape": table.df.shape,
         }
         return table_box
-    
+
     def _table_string(self, table: ExtractedTable) -> str:
         """Convert table to string.
 
