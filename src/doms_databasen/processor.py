@@ -1,7 +1,7 @@
 import os
-import re
 from logging import getLogger
 from pathlib import Path
+import time
 
 from omegaconf import DictConfig
 
@@ -51,6 +51,7 @@ class Processor(PDFTextReader):
             case_id (str):
                 Case ID
         """
+        start = time.time()
         case_id = str(case_id)
 
         case_dir_raw = self.data_raw_dir / case_id
@@ -82,6 +83,7 @@ class Processor(PDFTextReader):
             pdf_path=pdf_path,
         )
         processed_data["pdf_data"] = pdf_data
+        processed_data["process_time"] = time.time() - start
 
         # Remove anonymization tags from text.
         # TODO: Just do this in finalize.
