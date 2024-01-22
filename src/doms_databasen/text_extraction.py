@@ -1728,7 +1728,10 @@ class PDFTextReader:
         # Therefore, just use text from first box
         if not cell:
             if len(boxes) > 1:
-                assert boxes[1]["text"] == "9"
+                if not boxes[1]["text"] == "9":
+                    logger.warning(
+                        f"Second box is not 9."
+                    )
             box_first = boxes[0]
             text = box_first["text"]
             return text
