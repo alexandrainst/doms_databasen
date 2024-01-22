@@ -38,9 +38,11 @@ neighbor_distance_max: 1
 
 box_area_min: 2500
 box_height_min: 35
+box_height_upper: 110
 box_width_min: 35
 box_accept_ratio: 0.6
-slight_shift_to_bottom: 5
+box_split_white_space: 7
+shift_up: 5
 iou_overlap_threshold: 0.5
 indices_to_split_edge_min_length: 5
 edge_accept_ratio: 0.95
@@ -145,7 +147,7 @@ scrape:
 # Process arguments
 process:
   force: True
-  case_id: "2508"
+  case_id: "4"
   all: False
   messages:
     give_correct_input: >

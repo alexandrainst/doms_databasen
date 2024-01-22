@@ -2074,12 +2074,13 @@ class PDFTextReader:
         # Split them into separate boxes.
         inverted_boxes_split = self._split_boxes_in_image(inverted=inverted.copy())
 
-        binary_splitted = self._make_split_between_overlapping_box_and_line(
-            binary=inverted_boxes_split.copy()
-        )
+        inverted_boxes_split_2 = self._split_boxes_vertically(binary=inverted_boxes_split)
+        # binary_splitted = self._make_split_between_overlapping_box_and_line(
+        #     binary=inverted_boxes_split.copy()
+        # )
 
         sort_function = lambda blob: blob.area
-        blobs = self._get_blobs(binary=binary_splitted, sort_function=sort_function)
+        blobs = self._get_blobs(binary=inverted_boxes_split_2, sort_function=sort_function)
 
         anonymized_boxes = []
         for blob in blobs:
@@ -2090,17 +2091,91 @@ class PDFTextReader:
 
             if not self._conditions_for_box(blob=blob):
                 continue
+            if not self._blob_expected_height(blob=blob):
+                anonymized_boxes += self._split_blob_to_multiple_boxes(blob=blob)
+            else:
+                box_coordinates = self._blob_to_box_coordinates(blob=blob)
 
+                anonymized_box = {
+                    "coordinates": box_coordinates,
+                    "origin": self.config.origin_box,
+                }
+                anonymized_boxes.append(anonymized_box)
+
+        return anonymized_boxes
+    
+    def _blob_expected_height(self, blob: RegionProperties) -> bool:
+        height = blob.bbox[2] - blob.bbox[0]
+        return self.config.box_height_min < height < self.config.box_height_upper
+    
+    def _split_blob_to_multiple_boxes(self, blob: RegionProperties) -> List[dict]:
+        blob_image = np.array(blob.image * 255, dtype=np.uint8)
+        booled = np.all(blob_image, axis=1)
+        row_splits = []
+        
+        count = 0
+        for i in range(len(booled)):
+            if booled[i]:
+                count += 1
+            else:
+                if count > self.config.box_split_white_space:
+                    row_splits.append(i - self.config.box_split_white_space // 2)
+                count = 0
+        for row in row_splits:
+            blob_image[row, :] = 0
+
+        blobs = self._get_blobs(blob_image)
+
+        boxes = []
+        for blob in blobs:
+            if blob.area < self.config.box_area_min:
+                # Blob is too small to be considered an anonymized box.
+                break
+            if not self._conditions_for_box(blob=blob):
+                continue
             box_coordinates = self._blob_to_box_coordinates(blob=blob)
-
             anonymized_box = {
                 "coordinates": box_coordinates,
                 "origin": self.config.origin_box,
             }
-            anonymized_boxes.append(anonymized_box)
+            boxes.append(anonymized_box)
+        return boxes
 
-        return anonymized_boxes
+    
+    def _split_boxes_vertically(self, binary: np.ndarray) -> np.ndarray:
+        blobs = self._get_blobs(binary=binary)
+        for blob in blobs:
+            if blob.area_bbox < self.config.box_area_min:
+                break
+            blob_image = np.array(blob.image * 255, dtype=np.uint8)
+            closed = cv2.morphologyEx(blob_image, cv2.MORPH_CLOSE, np.ones((20, 1)))
+            opening = cv2.morphologyEx(closed, cv2.MORPH_OPEN, np.ones((15, 1)))
 
+            booled = np.any(opening, axis=0)
+            empty_cols = np.where(booled == False)[0]
+            if len(empty_cols) == 0:
+                continue
+
+            split_cols = []
+
+            count = 1
+            for i in range(1, len(empty_cols)):
+                col_prev = empty_cols[i - 1]
+                col = empty_cols[i]
+                if col - col_prev == 1:
+                    count += 1
+                else:
+                    if count > 7:
+                        split_cols.append(empty_cols[i - 1])
+                    count = 1
+            if count > 7:
+                split_cols.append(empty_cols[-1])
+
+            for col in split_cols:
+                row_min, col_min, row_max, _ = blob.bbox
+                binary[row_min: row_max, col_min + col] = 0
+
+        return binary
     def _blob_to_box_coordinates(self, blob: RegionProperties) -> List[int]:
         """Convert blob to box coordinates.
 
@@ -2135,7 +2210,7 @@ class PDFTextReader:
         col_max = min(col_max_upper, col_max_lower) + 1
         col_min = max(col_min_upper, col_min_lower)
         row_min, _, row_max, _ = blob.bbox
-        box_coordinates = [row_min, col_min, row_max, col_max]
+        box_coordinates = [row_min - self.config.shift_up, col_min, row_max, col_max]
         return box_coordinates
 
     def _conditions_for_box(self, blob: RegionProperties) -> bool:
@@ -2181,11 +2256,12 @@ class PDFTextReader:
                 break
             row_min, col_min, row_max, col_max = blob.bbox
 
+            # Blob to uint8 image
+            blob_image = np.array(blob.image * 255, dtype=np.uint8)
+
             box_height = row_max - row_min
             if box_height > 2 * BOX_HEIGHT_LOWER_BOUND:
-
-                # Blob to uint8 image
-                blob_image = np.array(blob.image * 255, dtype=np.uint8)
+                # Horizontal splits
 
                 # Get indices of rows to split
                 row_indices_to_split = self._get_row_indices_to_split(
@@ -2198,6 +2274,9 @@ class PDFTextReader:
                 for row_idx in row_indices_to_split:
                     row_idx_ = row_min + row_idx - self.config.box_split_delta
                     inverted[row_idx_, col_min : col_max + 1] = 0
+
+            
+
 
         return inverted
 
@@ -2235,6 +2314,8 @@ class PDFTextReader:
             List[int]:
                 List of row indices to split.
         """
+        if not edge_lengths:
+            return []
         edges = sorted(edge_lengths.keys())
         edge_first = edges[0]
         edges_grouped = [[edge_first]]
@@ -2297,6 +2378,8 @@ class PDFTextReader:
                 Dictionary with indices and lengths of horizontal edges.
         """
         edge_row_indices = np.where(edges_h > 0)[0]
+        if len(edge_row_indices) == 0:
+            return dict()
         indices, lengths = np.unique(edge_row_indices, return_counts=True)
         edge_lengths = dict(zip(indices, lengths))
 
