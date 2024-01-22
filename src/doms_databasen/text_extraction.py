@@ -2098,7 +2098,9 @@ class PDFTextReader:
 
             if not self._conditions_for_box(blob=blob):
                 continue
-            if not self._blob_expected_height(blob=blob):
+            height = blob.bbox[2] - blob.bbox[0]
+            if height > self.config.box_height_upper:
+                logger.info("Blob not splitted correctly with initial methods.")
                 anonymized_boxes += self._split_blob_to_multiple_boxes(blob=blob)
             else:
                 box_coordinates = self._blob_to_box_coordinates(blob=blob)
@@ -2110,10 +2112,6 @@ class PDFTextReader:
                 anonymized_boxes.append(anonymized_box)
 
         return anonymized_boxes
-
-    def _blob_expected_height(self, blob: RegionProperties) -> bool:
-        height = blob.bbox[2] - blob.bbox[0]
-        return self.config.box_height_min < height < self.config.box_height_upper
 
     def _split_blob_to_multiple_boxes(self, blob: RegionProperties) -> List[dict]:
         blob_image = np.array(blob.image * 255, dtype=np.uint8)
