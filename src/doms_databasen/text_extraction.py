@@ -2196,10 +2196,6 @@ class PDFTextReader:
             List[int]:
                 Box coordinates.
         """
-        assert (
-            40 < blob.bbox[2] - blob.bbox[0] < 110
-        ), "Box height is not in expected range?"
-
         rows, cols = blob.coords.T
         row_center, _ = blob.centroid
         indices_upper = np.where(rows < row_center)[0]
