@@ -1,7 +1,7 @@
 import os
+import time
 from logging import getLogger
 from pathlib import Path
-import time
 
 from omegaconf import DictConfig
 
@@ -86,7 +86,7 @@ class Processor(PDFTextReader):
         processed_data["process_info"] = {
             "process_time": time.time() - start,
             "hardware_used": "gpu" if self.config.gpu else "cpu",
-                                          }
+        }
 
         # Remove anonymization tags from text.
         # TODO: Just do this in finalize.

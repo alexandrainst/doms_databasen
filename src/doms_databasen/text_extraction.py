@@ -2074,13 +2074,17 @@ class PDFTextReader:
         # Split them into separate boxes.
         inverted_boxes_split = self._split_boxes_in_image(inverted=inverted.copy())
 
-        inverted_boxes_split_2 = self._split_boxes_vertically(binary=inverted_boxes_split)
+        inverted_boxes_split_2 = self._split_boxes_vertically(
+            binary=inverted_boxes_split
+        )
         # binary_splitted = self._make_split_between_overlapping_box_and_line(
         #     binary=inverted_boxes_split.copy()
         # )
 
         sort_function = lambda blob: blob.area
-        blobs = self._get_blobs(binary=inverted_boxes_split_2, sort_function=sort_function)
+        blobs = self._get_blobs(
+            binary=inverted_boxes_split_2, sort_function=sort_function
+        )
 
         anonymized_boxes = []
         for blob in blobs:
@@ -2103,16 +2107,16 @@ class PDFTextReader:
                 anonymized_boxes.append(anonymized_box)
 
         return anonymized_boxes
-    
+
     def _blob_expected_height(self, blob: RegionProperties) -> bool:
         height = blob.bbox[2] - blob.bbox[0]
         return self.config.box_height_min < height < self.config.box_height_upper
-    
+
     def _split_blob_to_multiple_boxes(self, blob: RegionProperties) -> List[dict]:
         blob_image = np.array(blob.image * 255, dtype=np.uint8)
         booled = np.all(blob_image, axis=1)
         row_splits = []
-        
+
         count = 0
         for i in range(len(booled)):
             if booled[i]:
@@ -2141,7 +2145,6 @@ class PDFTextReader:
             boxes.append(anonymized_box)
         return boxes
 
-    
     def _split_boxes_vertically(self, binary: np.ndarray) -> np.ndarray:
         blobs = self._get_blobs(binary=binary)
         for blob in blobs:
@@ -2173,9 +2176,10 @@ class PDFTextReader:
 
             for col in split_cols:
                 row_min, col_min, row_max, _ = blob.bbox
-                binary[row_min: row_max, col_min + col] = 0
+                binary[row_min:row_max, col_min + col] = 0
 
         return binary
+
     def _blob_to_box_coordinates(self, blob: RegionProperties) -> List[int]:
         """Convert blob to box coordinates.
 
@@ -2274,9 +2278,6 @@ class PDFTextReader:
                 for row_idx in row_indices_to_split:
                     row_idx_ = row_min + row_idx - self.config.box_split_delta
                     inverted[row_idx_, col_min : col_max + 1] = 0
-
-            
-
 
         return inverted
 
