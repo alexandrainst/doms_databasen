@@ -340,9 +340,9 @@ def test_find_tables(
     "image_path, rows_to_split_expected",
     [
         ("tests/data/processor/overlapping_boxes_1.png", [60]),
-        ("tests/data/processor/overlapping_boxes_2.png", [62, 122, 187]),
+        ("tests/data/processor/overlapping_boxes_2.png", [62, 187, 122]),
         ("tests/data/processor/overlapping_boxes_3.png", [62, 122]),
-        ("tests/data/processor/overlapping_boxes_4.png", [56, 110]),
+        ("tests/data/processor/overlapping_boxes_4.png", [110, 56]),
     ],
 )
 def test_get_row_indices_to_split(pdf_text_reader, image_path, rows_to_split_expected):

@@ -148,7 +148,7 @@ scrape:
 # Process arguments
 process:
   force: True
-  case_id: "44"
+  case_id: "51"
   all: False
   messages:
     give_correct_input: >
@@ -160,7 +160,7 @@ process:
   start_case_id: "59"
 
 ## Debug
-image_idx: 2 # page number
+image_idx: False # page number
 
 # Finalize arguments
 finalize:
