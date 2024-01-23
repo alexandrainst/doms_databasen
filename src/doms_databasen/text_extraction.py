@@ -160,6 +160,13 @@ class PDFTextReader:
             box_anonymization=box_anonymization,
             underline_anonymization=underline_anonymization,
         )
+
+        if not box_anonymization:
+            text_tika = self._read_text_with_tika(pdf_path=str(pdf_path))
+            pdf_data["text_tika"] = text_tika
+        else:
+            pdf_data["text_tika"] = ""
+
         return pdf_data
 
     def _pdf_data(
