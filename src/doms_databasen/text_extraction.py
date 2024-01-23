@@ -546,7 +546,7 @@ class PDFTextReader:
                 binarize_threshold=self.config.threshold_binarize_empty_box,
             ):
                 continue
-
+            
             crops_to_read = self._process_crop_before_read(
                 crop=crop_cleaned,
                 binary_threshold=self.config.threshold_binarize_empty_box,
@@ -1639,7 +1639,8 @@ class PDFTextReader:
             binary_threshold=self.config.threshold_binarize_process_crop,
         )
         if (
-            self._empty_image(
+            crop_refined is False
+            or self._empty_image(
                 image=crop_refined,
                 binarize_threshold=self.config.threshold_binarize_process_crop,
             )
@@ -1721,6 +1722,8 @@ class PDFTextReader:
             text (str):
                 Text from crop.
         """
+        if not crops:
+            return ""
         results = [self.reader.readtext(crop) for crop in crops]
         if not any(results):
             return ""
@@ -1930,7 +1933,10 @@ class PDFTextReader:
                 crop=crop,
                 binary_threshold=binary_threshold,
                 padding=refine_padding,
+                cell=cell,
             )
+            if crop_refined is False:
+                return []
         else:
             crop_refined = crop
 
@@ -2004,6 +2010,7 @@ class PDFTextReader:
         binary_threshold: int,
         box: dict = None,
         padding: int = 0,
+        cell: bool = False,
     ) -> tuple:
         """Refine crop.
 
@@ -2025,9 +2032,26 @@ class PDFTextReader:
             val_min=0,
             val_max=255,
         )
+
         rows, cols = np.where(binary > 0)
 
-        col_first, col_last = cols.min(), cols.max()
+        if not cell:
+            # Ignore starting symbols as *'^
+            mid = n // 2
+            col_first = m - 1
+            # col_last = 0
+            for blob in self._get_blobs(binary):
+                blob_row_min, blob_col_min, blob_row_max, blob_col_max = blob.bbox
+                if mid in range(blob_row_min, blob_row_max):
+                    col_first = min(col_first, blob_col_min)
+                    # col_last = max(col_last, blob_col_max)
+
+            if col_first == m - 1:
+                return False, None
+        else:
+            col_first = cols.min()
+        
+        col_last = cols.max()
         row_first, row_last = rows.min(), rows.max()
         p = padding
 

@@ -182,6 +182,18 @@ def test_get_text_from_boxes(pdf_text_reader, boxes, text_expected):
             False,
             "<anonym>P1</anonym>",
         ),
+        (
+            "tests/data/processor/get_text_from_box_9.png",
+            {'coordinates': [474, 1440, 511, 1547], 'origin': 'box'},
+            False,
+            "<anonym>S</anonym>",
+        ),
+        (
+            "tests/data/processor/get_text_from_box_9.png",
+            {'coordinates': [820, 1842, 856, 1928], 'origin': 'box'},
+            False,
+            "",
+        )
     ],
 )
 def test_read_text_from_anonymized_box(
@@ -307,7 +319,13 @@ def test_remove_logo(pdf_text_reader, image_path, difference_flag_expected):
             True,
             (2, 4),
         ),
-        ("tests/data/processor/image_processed_with_no_tables.png", 0, [], True, None),
+        (
+            "tests/data/processor/image_processed_with_no_tables.png",
+            0, 
+            [], 
+            True, 
+            None
+            ),
         (
             "tests/data/processor/page_with_table_1.png",
             1,
@@ -352,4 +370,4 @@ def test_get_row_indices_to_split(pdf_text_reader, image_path, rows_to_split_exp
 
 
 if __name__ == "__main__":
-    pytest.main([__file__ + "::test_find_anonymized_boxes", "-s"])
+    pytest.main([__file__ + "::test_read_text_from_anonymized_box", "-s"])
