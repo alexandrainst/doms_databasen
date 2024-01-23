@@ -42,11 +42,11 @@ box_height_upper: 110
 box_width_min: 35
 box_accept_ratio: 0.6
 box_split_white_space: 7
-shift_up: 5
+shift_up: 0
 iou_overlap_threshold: 0.5
 indices_to_split_edge_min_length: 5
 edge_accept_ratio: 0.95
-indices_to_split_row_diff: 50
+indices_to_split_row_diff: 45
 max_scale: 1.5
 
 anonymized_box_crop_padding: 3
@@ -143,11 +143,12 @@ scrape:
       Scraping done!
   test_case_name: test_case
   test_case_id: "1"
+  start_case_id: None
 
 # Process arguments
 process:
   force: True
-  case_id: "4"
+  case_id: "44"
   all: False
   messages:
     give_correct_input: >
@@ -156,9 +157,10 @@ process:
     done: >
       Processing done!
   test_case_id: "1"
+  start_case_id: "59"
 
 ## Debug
-image_idx: False # page number
+image_idx: 2 # page number
 
 # Finalize arguments
 finalize:

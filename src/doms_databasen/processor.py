@@ -114,6 +114,11 @@ class Processor(PDFTextReader):
             ],
             key=lambda case_id: int(case_id),
         )
+
+        start_case_id = self.config.process.start_case_id
+        if start_case_id:
+            case_ids = case_ids[case_ids.index(start_case_id) :]
+
         for case_id in case_ids:
             self.process(case_id)
 

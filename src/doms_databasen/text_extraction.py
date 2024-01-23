@@ -2080,9 +2080,6 @@ class PDFTextReader:
         inverted_boxes_split_2 = self._split_boxes_vertically(
             binary=inverted_boxes_split
         )
-        # binary_splitted = self._make_split_between_overlapping_box_and_line(
-        #     binary=inverted_boxes_split.copy()
-        # )
 
         sort_function = lambda blob: blob.area
         blobs = self._get_blobs(
@@ -2112,9 +2109,37 @@ class PDFTextReader:
                 anonymized_boxes.append(anonymized_box)
 
         return anonymized_boxes
+    
+    def _remove_black_border(self, blob_image: np.ndarray) -> np.ndarray:
+        """Remove black border from blob image.
+        
+        Args:
+            blob_image (np.ndarray):
+                Image of blob.
+
+        Returns:
+            np.ndarray:
+                Image of blob with black border removed.
+        """
+        inverted = cv2.bitwise_not(blob_image)
+        blobs = self._get_blobs(inverted)
+        for blob_ in blobs:
+            if self._touches_boundary(binary_crop=inverted, blob=blob_):
+                coords = blob_.coords
+                blob_image[coords[:, 0], coords[:, 1]] = 255
+        return blob_image
 
     def _split_blob_to_multiple_boxes(self, blob: RegionProperties) -> List[dict]:
         blob_image = np.array(blob.image * 255, dtype=np.uint8)
+        blob_image = self._remove_black_border(blob_image=blob_image)
+
+        inverted = cv2.bitwise_not(blob_image)
+        blobs = self._get_blobs(inverted)
+        for blob_ in blobs:
+            if self._touches_boundary(binary_crop=inverted, blob=blob_):
+                coords = blob_.coords
+                blob_image[coords[:, 0], coords[:, 1]] = 255
+
         booled = np.all(blob_image, axis=1)
         row_splits = []
 
@@ -2199,6 +2224,8 @@ class PDFTextReader:
         """
         rows, cols = blob.coords.T
         row_center, _ = blob.centroid
+
+        # Get col_min and col_max
         indices_upper = np.where(rows < row_center)[0]
         indices_lower = np.where(rows > row_center)[0]
 
@@ -2210,7 +2237,18 @@ class PDFTextReader:
 
         col_max = min(col_max_upper, col_max_lower) + 1
         col_min = max(col_min_upper, col_min_lower)
-        row_min, _, row_max, _ = blob.bbox
+
+
+        # Get row_min and row_max
+        row_indices_left = np.where(cols == col_min)[0]
+
+        row_indices_right = np.where(cols == col_max - 1)[0]
+
+        row_min_idx = max(row_indices_left.min(), row_indices_right.min())
+        row_max_idx = min(row_indices_left.max(), row_indices_right.max())
+        row_min = rows[row_min_idx]
+        row_max = rows[row_max_idx] + 1
+
         box_coordinates = [row_min - self.config.shift_up, col_min, row_max, col_max]
         return box_coordinates
 
@@ -2314,26 +2352,15 @@ class PDFTextReader:
         """
         if not edge_lengths:
             return []
-        edges = sorted(edge_lengths.keys())
-        edge_first = edges[0]
-        edges_grouped = [[edge_first]]
-        for i in range(1, len(edges)):
-            edge = edges[i]
-            edge_prev = edges[i - 1]
-            if edge - edge_prev < self.config.indices_to_split_row_diff:
-                edges_grouped[-1].append(edge)
-            else:
-                edges_grouped.append([edge])
 
-        groups_max_aggregated = [
-            self._group_max(group=group, edge_lengths=edge_lengths)
-            for group in edges_grouped
-        ]
-        rows_to_split = [
-            row
-            for row in groups_max_aggregated
-            if edge_lengths[row] > self.config.indices_to_split_edge_min_length
-        ]
+        rows_to_split = sorted(edge_lengths, key=edge_lengths.get, reverse=True)
+        rows_to_split = [row for row in rows_to_split if edge_lengths[row] > self.config.indices_to_split_edge_min_length]
+        
+        for i in range(len(rows_to_split) - 1, 0, -1):
+            diffs = [abs(rows_to_split[i] - rows_to_split[j]) for j in range(i)]
+            if min(diffs) < self.config.indices_to_split_row_diff:
+                rows_to_split.pop(i)
+
         return rows_to_split
 
     def _group_max(self, group, edge_lengths):
