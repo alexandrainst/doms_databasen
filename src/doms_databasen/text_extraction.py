@@ -84,7 +84,8 @@ class PDFTextReader:
         underline_anonymization = True
 
         for i, image in enumerate(images):
-            logger.info(f"Reading page {i + 1}")
+            page_num = i + 1
+            logger.info(f"Reading page {page_num}")
 
             pages[i] = {
                 "text": "",
@@ -152,8 +153,8 @@ class PDFTextReader:
             all_boxes = main_text_boxes + all_anonymized_boxes + table_boxes
             page_text = self._get_text_from_boxes(boxes=all_boxes)
 
-            pages[i]["text"] = page_text.strip()
-            pages[i]["extraction_method"] = "easyocr"
+            pages[page_num]["text"] = page_text.strip()
+            pages[page_num]["extraction_method"] = "easyocr"
 
         pdf_data = self._pdf_data(
             pages=pages,
@@ -1483,7 +1484,7 @@ class PDFTextReader:
         """
         col_start_box_2 = box_2["coordinates"][1]
         col_end_box_1 = box_1["coordinates"][3]
-        return col_start_box_2 - col_end_box_1
+        return int(col_start_box_2 - col_end_box_1)
 
     def _ignore_line(self, line: List[dict]) -> bool:
         """Checks if line should be ignored.
