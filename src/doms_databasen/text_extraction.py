@@ -164,7 +164,11 @@ class PDFTextReader:
         return pdf_data
 
     def _pdf_data(
-        self, pages: dict, box_anonymization: bool, underline_anonymization: bool, pdf_path: Path
+        self,
+        pages: dict,
+        box_anonymization: bool,
+        underline_anonymization: bool,
+        pdf_path: Path,
     ) -> dict:
         """Get data about PDF.
 
@@ -177,7 +181,7 @@ class PDFTextReader:
                 True if underlines are used in PDF. False otherwise.
             pdf_path (Path):
                 Path to PDF.
-            
+
         Returns:
             pdf_data (dict):
                 Data about PDF.
@@ -1733,9 +1737,7 @@ class PDFTextReader:
         if not cell:
             if len(boxes) > 1:
                 if not boxes[1]["text"] == "9":
-                    logger.warning(
-                        f"Second box is not 9."
-                    )
+                    logger.warning(f"Second box is not 9.")
             box_first = boxes[0]
             text = box_first["text"]
             return text
@@ -2113,10 +2115,10 @@ class PDFTextReader:
                 anonymized_boxes.append(anonymized_box)
 
         return anonymized_boxes
-    
+
     def _remove_black_border(self, blob_image: np.ndarray) -> np.ndarray:
         """Remove black border from blob image.
-        
+
         Args:
             blob_image (np.ndarray):
                 Image of blob.
@@ -2242,7 +2244,6 @@ class PDFTextReader:
         col_max = min(col_max_upper, col_max_lower) + 1
         col_min = max(col_min_upper, col_min_lower)
 
-
         # Get row_min and row_max
         row_indices_left = np.where(cols == col_min)[0]
 
@@ -2358,8 +2359,12 @@ class PDFTextReader:
             return []
 
         rows_to_split = sorted(edge_lengths, key=edge_lengths.get, reverse=True)
-        rows_to_split = [row for row in rows_to_split if edge_lengths[row] > self.config.indices_to_split_edge_min_length]
-        
+        rows_to_split = [
+            row
+            for row in rows_to_split
+            if edge_lengths[row] > self.config.indices_to_split_edge_min_length
+        ]
+
         for i in range(len(rows_to_split) - 1, 0, -1):
             diffs = [abs(rows_to_split[i] - rows_to_split[j]) for j in range(i)]
             if min(diffs) < self.config.indices_to_split_row_diff:
