@@ -159,18 +159,12 @@ class PDFTextReader:
             pages=pages,
             box_anonymization=box_anonymization,
             underline_anonymization=underline_anonymization,
+            pdf_path=pdf_path,
         )
-
-        if not box_anonymization:
-            text_tika = self._read_text_with_tika(pdf_path=str(pdf_path))
-            pdf_data["text_tika"] = text_tika
-        else:
-            pdf_data["text_tika"] = ""
-
         return pdf_data
 
     def _pdf_data(
-        self, pages: dict, box_anonymization: bool, underline_anonymization: bool
+        self, pages: dict, box_anonymization: bool, underline_anonymization: bool, pdf_path: Path
     ) -> dict:
         """Get data about PDF.
 
@@ -181,7 +175,9 @@ class PDFTextReader:
                 True if anonymized boxes are used in PDF. False otherwise.
             underline_anonymization (bool):
                 True if underlines are used in PDF. False otherwise.
-
+            pdf_path (Path):
+                Path to PDF.
+            
         Returns:
             pdf_data (dict):
                 Data about PDF.
@@ -192,6 +188,7 @@ class PDFTextReader:
         )
         pdf_data["anonymization_method"] = anonymization_method
         pdf_data["pages"] = pages
+        pdf_data["text_tika"] = self._read_text_with_tika(pdf_path=str(pdf_path))
         return pdf_data
 
     def _anonymization_used(
