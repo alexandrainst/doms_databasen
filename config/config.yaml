@@ -17,6 +17,8 @@ paths:
   # Paths for testing the processor
   test_data_raw_dir: tests/data/processor/raw/
   # test_case_dir: test_case/
+  blacklists:
+    process: data/blacklists/process.jsonl
 
 file_names:
   tabular_data: tabular_data.json
@@ -147,9 +149,9 @@ scrape:
 
 # Process arguments
 process:
-  force: True
-  case_id: "51"
-  all: False
+  force: False
+  case_id: "113"
+  all: True
   messages:
     give_correct_input: >
       Please specify either a 'case_id'
@@ -157,7 +159,7 @@ process:
     done: >
       Processing done!
   test_case_id: "1"
-  start_case_id: "59"
+  start_case_id: "113"
 
 ## Debug
 image_idx: False # page number
