@@ -1,3 +1,5 @@
+from typing import List
+
 import json
 
 import jsonlines
@@ -55,3 +57,22 @@ def append_jsonl(data: dict, file_name: str) -> None:
 
     with jsonlines.open(file_name, mode="a") as writer:
         writer.write(data)
+
+
+def load_jsonl(file_name: str) -> List[dict]:
+    """Loads jsonl file.
+
+    Args:
+        file_name (str):
+            File name to load.
+
+    Returns:
+        list of dict:
+            Data from file.
+
+    """
+    data = []
+    with jsonlines.open(file_name, mode="r") as reader:
+        for obj in reader:
+            data.append(obj)
+    return data

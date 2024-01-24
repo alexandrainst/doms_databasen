@@ -2,12 +2,13 @@ import os
 import time
 from logging import getLogger
 from pathlib import Path
+from typing import List
 
 from omegaconf import DictConfig
 
 from .constants import N_FILES_PROCESSED_CASE_DIR, N_FILES_RAW_CASE_DIR
 from .text_extraction import PDFTextReader
-from .utils import read_json, save_dict_to_json
+from .utils import read_json, save_dict_to_json, load_jsonl
 
 logger = getLogger(__name__)
 
@@ -40,6 +41,7 @@ class Processor(PDFTextReader):
         )
         self.data_processed_dir = Path(self.config.paths.data_processed_dir)
         self.force = self.config.process.force
+        self.blacklist = self._read_blacklist()
 
     def process(self, case_id: str) -> None:
         """Processes a single case.
@@ -51,6 +53,10 @@ class Processor(PDFTextReader):
             case_id (str):
                 Case ID
         """
+        case_id = str(case_id)
+        if case_id in self.blacklist:
+            logger.info(f"{case_id} is blacklisted.")
+            return
         start = time.time()
         case_id = str(case_id)
 
@@ -159,3 +165,14 @@ class Processor(PDFTextReader):
                 True if case has already been scraped. False otherwise.
         """
         return case_dir.exists() and len(os.listdir(case_dir)) == N_FILES_RAW_CASE_DIR
+    
+    def _read_blacklist(self) -> List[dict]:
+        """Reads the blacklised cases.
+        
+        Returns:
+            list of dict:
+                List of blacklisted cases.
+        """
+        data = load_jsonl(self.config.paths.blacklists.process)
+        blacklist = [str(item["case_id"]) for item in data]
+        return blacklist
