@@ -87,7 +87,7 @@ class PDFTextReader:
             page_num = i + 1
             logger.info(f"Reading page {page_num}")
 
-            pages[i] = {
+            pages[page_num] = {
                 "text": "",
                 "extraction_method": "",
             }
@@ -125,8 +125,8 @@ class PDFTextReader:
                 if not tables:
                     current_page = pdf_reader.pages[i]
                     page_text = current_page.extract_text()
-                    pages[i]["text"] = page_text.strip()
-                    pages[i]["extraction_method"] = "pypdf"
+                    pages[page_num]["text"] = page_text.strip()
+                    pages[page_num]["extraction_method"] = "pypdf"
                     # Continue to next page.
                     continue
 
