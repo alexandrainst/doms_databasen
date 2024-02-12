@@ -1,7 +1,7 @@
 <a href="https://github.com/alexandrainst/doms_databasen"><img src="gfx/alexandra_logo.png" width="239" height="175" align="right" /></a>
 # doms_databasen
 
-Scraping og processering af [domsdatabasen](https://domsdatabasen.dk/#)
+Scraping og processering af [domsdatabasen](https://domsdatabasen.dk/#).
 
 Hver enkelt dom kan tilgås via https://domsdatabasen.dk/#sag/\<nummer\>, hvor \<nummer\> er mellem 1 og 3821 (pr. 11-10-2023).
 
