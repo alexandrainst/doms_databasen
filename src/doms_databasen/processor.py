@@ -72,16 +72,16 @@ class Processor(PDFTextReader):
 
         # Check if raw data for case ID exists.
         if not self._raw_data_exists(case_dir_raw):
-            logger.info(f"{self.config.message_case_not_found} {case_id}")
+            logger.info(f"Case {case_id} does not exist in raw data directory.")
             return
 
         # If case has already been processed, skip, unless force=True.
         if self._already_processed(case_dir_processed) and not self.force:
-            logger.info(f"{self.config.message_case_already_processed} {case_id}")
+            logger.info(f"Case {case_id} has already been processed. Use --force to overwrite.")
             return
 
         # Process data for the case.
-        logger.info(f"{self.config.message_processing_case} {case_id}")
+        logger.info(f"Processing case {case_id}...")
 
         case_dir_processed.mkdir(parents=True, exist_ok=True)
 
@@ -107,14 +107,14 @@ class Processor(PDFTextReader):
                 case_dir_processed / self.config.file_names.processed_data,
             )
 
-        logger.info(f"{self.config.message_case_done} {case_id}")
+        logger.info(f"Done with case: {case_id}")
 
         # Return data for testing purposes.
         return processed_data
 
     def process_all(self) -> None:
         """Processes all cases in data/raw"""
-        logger.info(self.config.message_processing_all_cases)
+        logger.info("Processing all cases...")
         case_ids = sorted(
             [
                 case_path.name

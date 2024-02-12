@@ -250,29 +250,6 @@ class PDFTextReader:
         main_text_boxes = [self._change_box_format(box) for box in result]
         return main_text_boxes
 
-    def _anonymization_methods_used_in_pdf(
-        self, anonymized_boxes: List[dict], anonymized_boxes_underlines: List
-    ) -> Tuple[bool, bool]:
-        """Determine which anonymization methods are used in the PDF.
-
-        Args:
-            anonymized_boxes (List[dict]):
-                List of anonymized boxes with coordinates.
-            anonymized_boxes_underlines (List[dict]):
-                List of anonymized boxes with coordinates.
-
-        Returns:
-            box_anonymization (bool):
-                True if anonymized boxes are used in PDF. False otherwise.
-            underline_anonymization (bool):
-                True if underlines are used in PDF. False otherwise.
-        """
-        box_anonymization = bool(anonymized_boxes)
-        underline_anonymization = bool(anonymized_boxes_underlines)
-
-        self._log_anonymization_methods(box_anonymization, underline_anonymization)
-        return box_anonymization, underline_anonymization
-
     def _extract_anonymized_boxes(self, image: np.ndarray) -> List[dict]:
         """Extract anonymized boxes from image.
 
@@ -328,22 +305,6 @@ class PDFTextReader:
         ]
         return anonymized_boxes_underlines_, underlines
 
-    def _log_anonymization_methods(
-        self, box_anonymization, underlines_anonymization
-    ) -> None:
-        """Log info about which anonymization methods are used in the PDF.
-
-        Args:
-            box_anonymization (bool):
-                True if anonymized boxes are used in PDF. False otherwise.
-            underlines_anonymization (bool):
-                True if underlines are used in PDF. False otherwise.
-        """
-        if not box_anonymization:
-            logger.info(self.config.message_pdf_has_no_anonymized_boxes)
-        if not underlines_anonymization:
-            logger.info(self.config.message_pdf_has_no_underline_anonymizations)
-
     def _get_images(self, pdf_path):
         """Get images from PDF.
 
@@ -355,15 +316,15 @@ class PDFTextReader:
             images (List[np.ndarray]):
                 List of images.
         """
-        if self.config.image_idx:
+        if self.config.process.page_number:
             # Used for debugging a single page
             images = map(
                 np.array,
                 convert_from_path(
                     pdf_path,
                     dpi=DPI,
-                    first_page=self.config.image_idx,
-                    last_page=self.config.image_idx,
+                    first_page=self.config.process.page_number,
+                    last_page=self.config.process.page_number,
                 ),
             )
         else:

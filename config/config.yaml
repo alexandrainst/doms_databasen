@@ -1,6 +1,7 @@
 defaults:
   - scrape: scrape
   - process: process
+  - finalize: finalize
   - _self_
 
 hydra:
@@ -9,7 +10,6 @@ hydra:
 
 domsdatabasen:
   url: https://domsdatabasen.dk/#sag
-
 
 paths:
   hf_hub: oliverkinch/domsdatabasen
@@ -29,35 +29,4 @@ anon_method:
   box: box
   none: none
 
-
-message_pdf_has_no_anonymized_boxes: >
-  No anonymized boxes detected on first page 1.
-  Therefore, there will not be searched for
-  anonymized boxes on the following pages.
-message_pdf_has_no_underline_anonymizations: >
-  No underline anonymization detected on page 1.
-  Therefore, there will not be searched for
-  underlines anonymization on the following pages.
-
-message_case_not_found: >
-  The case was not found. 
-  Case id:
-message_case_already_processed: >
-  The case has already been processed. Use 'process.force' to overwrite
-  Case id:
-message_processing_case: >
-  Processing case:
-message_case_done: >
-  Done with case:
-message_processing_all_cases: >
-  Processing all cases.
-
 testing: False
-
-
-## Debug
-image_idx: False # page number
-
-# Finalize arguments
-finalize:
-  force: False
