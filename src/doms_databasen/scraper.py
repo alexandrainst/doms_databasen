@@ -234,7 +234,7 @@ class DomsDatabasenScraper:
         """
         files_before_download = set(os.listdir(self.download_dir))
 
-        download_element = WebDriverWait(self.driver, self.config.sleep).until(
+        download_element = WebDriverWait(self.driver, self.config.scrape.sleep).until(
             EC.presence_of_element_located((By.XPATH, XPATHS["download_pdf"]))
         )
 
@@ -270,7 +270,7 @@ class DomsDatabasenScraper:
 
     def _accept_cookies(self) -> None:
         """Accepts cookies on the page."""
-        element = WebDriverWait(self.driver, self.config.sleep).until(
+        element = WebDriverWait(self.driver, self.config.scrape.sleep).until(
             EC.presence_of_element_located((By.XPATH, XPATHS["Accept cookies"]))
         )
         element.click()
