@@ -1,5 +1,5 @@
 <a href="https://github.com/alexandrainst/doms_databasen"><img src="gfx/alexandra_logo.png" width="239" height="175" align="right" /></a>
-# doms_databasen
+# Domsdatabasen
 
 Scraping og processering af [domsdatabasen](https://domsdatabasen.dk/#).
 
