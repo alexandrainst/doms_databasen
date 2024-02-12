@@ -1,4 +1,6 @@
 defaults:
+  - scrape: scrape
+  - process: process
   - _self_
 
 hydra:
@@ -141,20 +143,7 @@ testing: False
 page_from_top_to_this_row: 500
 logo_bbox_area_threshold: 50000
 
-# Scrape arguments
-scrape:
-  force: False
-  case_id: "1"
-  all: False
-  messages:
-    give_correct_input: >
-      Please specify either a 'case_id'
-      or use 'all' to scrape all cases.
-    done: >
-      Scraping done!
-  test_case_name: test_case
-  test_case_id: "1"
-  start_case_id: None
+
 
 # Process arguments
 process:
