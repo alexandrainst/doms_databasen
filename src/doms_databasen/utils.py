@@ -66,7 +66,6 @@ def load_jsonl(file_name: str) -> List[dict]:
     Returns:
         list of dict:
             Data from file.
-
     """
     data = []
     with jsonlines.open(file_name, mode="r") as reader:
