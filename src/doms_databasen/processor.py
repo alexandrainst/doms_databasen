@@ -38,13 +38,13 @@ class Processor(PDFTextReader):
         self.data_raw_dir = (
             Path(self.config.paths.data_raw_dir)
             if not self.config.testing
-            else Path(self.config.paths.test_data_raw_dir)
+            else Path(self.config.process.paths.test_data_raw_dir)
         )
 
         self.data_processed_dir = (
             Path(self.config.paths.data_processed_dir)
             if not self.config.testing
-            else Path(self.config.paths.test_data_processed_dir)
+            else Path(self.config.process.paths.test_data_processed_dir)
         )
 
         self.force = self.config.process.force
@@ -176,6 +176,6 @@ class Processor(PDFTextReader):
             list of dict:
                 List of blacklisted cases.
         """
-        data = load_jsonl(self.config.paths.blacklists.process)
+        data = load_jsonl(self.config.process.paths.blacklist)
         blacklist = [str(item["case_id"]) for item in data]
         return blacklist

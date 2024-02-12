@@ -10,20 +10,12 @@ hydra:
 domsdatabasen:
   url: https://domsdatabasen.dk/#sag
 
-hf_hub: oliverkinch/domsdatabasen
 
 paths:
-  download_dir: download_tmp/
+  hf_hub: oliverkinch/domsdatabasen
   data_raw_dir: data/raw/
   data_processed_dir: /mnt/data_6tb/oliver/doms_databasen/data/processed
   data_final_dir: /mnt/data_6tb/oliver/doms_databasen/data/final
-  test_tmp_dir: tmp/
-  # Paths for testing the processor
-  test_data_raw_dir: tests/data/processor/raw/
-  test_data_processed_dir: tests/data/processor/processed
-  # test_case_dir: test_case/
-  blacklists:
-    process: data/blacklists/process.jsonl
 
 file_names:
   tabular_data: tabular_data.json
@@ -31,83 +23,11 @@ file_names:
   processed_data: processed_data.json
   dataset: dataset.jsonl
 
-# Constants
-
-## Process
-# gpu: False
-
-# max_y_difference: 25
-
-# neighbor_distance_max: 1
-
-# box_area_min: 2500
-# box_height_min: 35
-# box_height_upper: 110
-# box_width_min: 35
-
-# box_split_white_space: 7
-# shift_up: 0
-# iou_overlap_threshold: 0.5
-# indices_to_split_edge_min_length: 5
-# edge_accept_ratio: 0.95
-# indices_to_split_row_diff: 45
-# max_scale: 1.5
-
-# anonymized_box_crop_padding: 3
-
-
-# make_split_between_overlapping_box_and_line_height_max: 30
-
-# box_split_delta: 2
-
-# threshold_binarize_process_image: 50
-# threshold_binarize_anonymized_boxes: 75
-
-# threshold_binarize_empty_box: 100
-# threshold_binarize_top_page: 230
-# threshold_gap: 11
-# threshold_box_confidence: 0.3
-# threshold_binarize_process_crop: 200
-# threshold_remove_boundary_height: 20
-threshold_remove_boundary_length: 50
-threshold_remove_boundary_closely_square: 3
-threshold_remove_boundary_too_few_pixels: 10
-
-
-threshold_footnote_height: 30 # Some less than box height lb
-
-invert_find_anonymized_boxes: False
-invert_find_underline_anonymizations: True
-
-underline_length_min: 26
-underline_height_lower_bound: 2
-underline_height_upper_bound: 7
-underline_remove_pad: 1
-underline_box_height: 50
-underline_box_height_min: 32
-underline_box_expand: 3
-threshold_binarize_line_anonymization: 255
-
-line_start_ignore_col: 1250
-line_start_ignore_row: 3000
-
-max_expand_steps: 10
-
-remove_cell_border: 5
-cell_box_shrink: 5
-cell_box_crop_padding: 3
-cell_multiple_lines_gap_threshold: 10
-
-remove_table_border: 7
-threshold_binarize_process_before_table_search: 1
-
-origin_box: box
-origin_underline: underline
-
 # Anonymization method
-anon_method_underline: underline
-anon_method_box: box
-anon_method_none: none
+anon_method:
+  underline: underline
+  box: box
+  none: none
 
 
 message_pdf_has_no_anonymized_boxes: >
@@ -134,25 +54,6 @@ message_processing_all_cases: >
 
 testing: False
 
-### Remove logo on first page
-page_from_top_to_this_row: 500
-logo_bbox_area_threshold: 50000
-
-
-
-# Process arguments
-process:
-  force: False
-  case_id: "721"
-  all: True
-  messages:
-    give_correct_input: >
-      Please specify either a 'case_id'
-      or use 'all' to process all cases.
-    done: >
-      Processing done!
-  test_case_id: "1"
-  start_case_id: "2732"
 
 ## Debug
 image_idx: False # page number

@@ -214,11 +214,11 @@ class PDFTextReader:
         # Both will only be true, if not any of
         # the anonymization methods are used.
         if box_anonymization and underline_anonymization:
-            return self.config.anon_method_none
+            return self.config.anon_method.none
         elif box_anonymization:
-            return self.config.anon_method_box
+            return self.config.anon_method.box
         elif underline_anonymization:
-            return self.config.anon_method_underline
+            return self.config.anon_method.underline
 
     def _get_text_from_pages(self, pages: dict) -> str:
         """Get text from pages.
@@ -292,7 +292,7 @@ class PDFTextReader:
             self._read_text_from_anonymized_box(
                 image=image.copy(),
                 anonymized_box=anonymized_box,
-                invert=self.config.invert_find_anonymized_boxes,
+                invert=self.config.process.invert_find_anonymized_boxes,
             )
             for anonymized_box in anonymized_boxes
         ]
@@ -322,7 +322,7 @@ class PDFTextReader:
             self._read_text_from_anonymized_box(
                 image.copy(),
                 box,
-                invert=self.config.invert_find_underline_anonymizations,
+                invert=self.config.process.invert_find_underline_anonymizations,
             )
             for box in anonymized_boxes_underlines
         ]
@@ -419,7 +419,7 @@ class PDFTextReader:
         """
         inverted = cv2.bitwise_not(image)
 
-        t = self.config.threshold_binarize_process_before_table_search
+        t = self.config.process.threshold_binarize_process_before_table_search
         binary = self._binarize(image=inverted, threshold=t, val_min=0, val_max=255)
 
         open_v = cv2.morphologyEx(binary, cv2.MORPH_OPEN, np.ones((10, 1)))
@@ -554,7 +554,7 @@ class PDFTextReader:
             crops_to_read = self._process_crop_before_read(
                 crop=crop_cleaned,
                 binary_threshold=self.config.process.threshold_binarize_empty_box,
-                refine_padding=self.config.cell_box_crop_padding,
+                refine_padding=self.config.process.cell_box_crop_padding,
                 cell=True,
             )
 
@@ -709,7 +709,7 @@ class PDFTextReader:
             cell_box (dict):
                 Cell in box format.
         """
-        p = self.config.remove_cell_border
+        p = self.config.process.remove_cell_border
         row_min, col_min, row_max, col_max = self._get_coordinates(table_or_cell=cell)
         cell_box = {"coordinates": (row_min + p, col_min + p, row_max - p, col_max - p)}
         return cell_box
@@ -730,7 +730,7 @@ class PDFTextReader:
         diffs = np.diff(rows)
 
         # Locate where the there are large gaps without text.
-        jump_indices = np.where(diffs > self.config.cell_multiple_lines_gap_threshold)[
+        jump_indices = np.where(diffs > self.config.process.cell_multiple_lines_gap_threshold)[
             0
         ]
         split_indices = []
@@ -782,7 +782,7 @@ class PDFTextReader:
         inverted = cv2.bitwise_not(image)
         binary = self._binarize(
             image=inverted,
-            threshold=self.config.threshold_binarize_line_anonymization,
+            threshold=self.config.process.threshold_binarize_line_anonymization,
             val_min=0,
             val_max=255,
         )
@@ -792,7 +792,7 @@ class PDFTextReader:
         anonymized_boxes = []
         underlines = []
         for blob in blobs:
-            if self._blob_length(blob=blob) < self.config.underline_length_min:
+            if self._blob_length(blob=blob) < self.config.process.underline_length_min:
                 break
             underline = self._extract_underline(blob=blob)
             if not underline:
@@ -801,15 +801,15 @@ class PDFTextReader:
             row_min, col_min, row_max, col_max = underline
             height = row_max - row_min
 
-            expand = self.config.underline_box_expand
-            box_row_min = row_min - self.config.underline_box_height
+            expand = self.config.process.underline_box_expand
+            box_row_min = row_min - self.config.process.underline_box_height
             box_row_max = row_min - 1  # Just above underline
             box_col_min = col_min - expand
             box_col_max = col_max + expand
 
             anonymized_box = {
                 "coordinates": [box_row_min, box_col_min, box_row_max, box_col_max],
-                "origin": self.config.origin_underline,
+                "origin": self.config.process.origin_underline,
             }
 
             crop = inverted[box_row_min:box_row_max, box_col_min:box_col_max]
@@ -872,8 +872,8 @@ class PDFTextReader:
 
         # Bounds for height of underline.
         lb, ub = (
-            self.config.underline_height_lower_bound,
-            self.config.underline_height_upper_bound,
+            self.config.process.underline_height_lower_bound,
+            self.config.process.underline_height_upper_bound,
         )
         height = row_max - row_min + 1
         if not lb < height < ub:
@@ -1043,7 +1043,7 @@ class PDFTextReader:
             np.ndarray:
                 Image with logo removed.
         """
-        r = self.config.page_from_top_to_this_row
+        r = self.config.process.page_from_top_to_this_row
         page_top = image[:r, :]
         page_top_binary = self._process_top_page(page_top=page_top)
 
@@ -1051,7 +1051,7 @@ class PDFTextReader:
         if blobs:
             blob_largest = blobs[0]
             # If largest blob is too large, then we are probably dealing with a logo.
-            if blob_largest.area_bbox > self.config.logo_bbox_area_threshold:
+            if blob_largest.area_bbox > self.config.process.logo_bbox_area_threshold:
                 # Remove logo
                 row_min, col_min, row_max, col_max = blob_largest.bbox
                 page_top[row_min:row_max, col_min:col_max] = 255
@@ -1161,7 +1161,7 @@ class PDFTextReader:
             )
             filled[mask] = 0
 
-        pad = self.config.underline_remove_pad
+        pad = self.config.process.underline_remove_pad
         for underline in underlines:
             row_min, col_min, row_max, col_max = underline
             # Remove underline
@@ -1225,7 +1225,7 @@ class PDFTextReader:
         for table_box in table_boxes:
             row_min, col_min, row_max, col_max = table_box["coordinates"]
 
-            p = self.config.remove_table_border
+            p = self.config.process.remove_table_border
             image[row_min - p : row_max + p, col_min - p : col_max + p] = 0
         return image
 
@@ -1241,7 +1241,7 @@ class PDFTextReader:
                 Cell in box format.
         """
         row_min, col_min, row_max, col_max = self._get_coordinates(table_or_cell=cell)
-        s = self.config.cell_box_shrink
+        s = self.config.process.cell_box_shrink
         # Better way to remove white border?
         # Flood fill if border is white?
         # Might be possible to use `_remove_boundary_noise`
@@ -1433,7 +1433,7 @@ class PDFTextReader:
 
         box_first = line[i]
         col_start = box_first["coordinates"][1]
-        if col_start > self.config.line_start_ignore_col:
+        if col_start > self.config.process.line_start_ignore_col:
             return []
 
         line_ = [box_first]
@@ -1529,9 +1529,9 @@ class PDFTextReader:
         row_min, col_min, row_max, _ = first_box["coordinates"]
         height = row_max - row_min
         return (
-            col_min > self.config.line_start_ignore_col
-            and row_min > self.config.line_start_ignore_row
-            and height < self.config.threshold_footnote_height
+            col_min > self.config.process.line_start_ignore_col
+            and row_min > self.config.process.line_start_ignore_row
+            and height < self.config.process.threshold_footnote_height
         )
 
     @staticmethod
@@ -1713,8 +1713,8 @@ class PDFTextReader:
                 True if crop is too small. False otherwise.
         """
         return (
-            crop.shape[0] < self.config.underline_box_height_min
-            and anonymized_box["origin"] == self.config.origin_underline
+            crop.shape[0] < self.config.process.underline_box_height_min
+            and anonymized_box["origin"] == self.config.process.origin_underline
         )
 
     def _read_text_from_crop(self, crops: List[np.ndarray], cell: bool = False) -> str:
@@ -2140,7 +2140,7 @@ class PDFTextReader:
 
                 anonymized_box = {
                     "coordinates": box_coordinates,
-                    "origin": self.config.origin_box,
+                    "origin": self.config.process.origin_box,
                 }
                 anonymized_boxes.append(anonymized_box)
 
@@ -2202,7 +2202,7 @@ class PDFTextReader:
             box_coordinates = self._blob_to_box_coordinates(blob=blob)
             anonymized_box = {
                 "coordinates": box_coordinates,
-                "origin": self.config.origin_box,
+                "origin": self.config.process.origin_box,
             }
             boxes.append(anonymized_box)
         return boxes
@@ -2696,7 +2696,7 @@ class PDFTextReader:
         """
         coords = blob.coords
         return (
-            len(coords) < self.config.threshold_remove_boundary_too_few_pixels
+            len(coords) < self.config.process.threshold_remove_boundary_too_few_pixels
             and touches_boundary
         )
 
@@ -2797,12 +2797,12 @@ class PDFTextReader:
     def _height_length_condition(self, height: int, length: int) -> bool:
         return (
             height < self.config.process.threshold_remove_boundary_height
-            or length > self.config.threshold_remove_boundary_length
+            or length > self.config.process.threshold_remove_boundary_length
         )
 
     def _closely_square(self, height: int, length: int) -> bool:
         return (
-            abs(height - length) < self.config.threshold_remove_boundary_closely_square
+            abs(height - length) < self.config.process.threshold_remove_boundary_closely_square
         )
 
     @staticmethod

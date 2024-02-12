@@ -49,9 +49,9 @@ class DomsDatabasenScraper:
 
     def __init__(self, config) -> None:
         self.config = config
-        self.test_dir = Path(self.config.paths.test_tmp_dir)
+        self.test_dir = Path(self.config.scrape.paths.test_dir)
         self.download_dir = (
-            Path(self.config.paths.download_dir)
+            Path(self.config.scrape.paths.download_dir)
             if not self.config.testing
             else self.test_dir
         )
