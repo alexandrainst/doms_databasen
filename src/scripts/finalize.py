@@ -45,7 +45,7 @@ def main(config: DictConfig) -> None:
     processed_case_paths = sorted(processed_case_paths, key=lambda p: int(p.stem))
 
     for path in processed_case_paths:
-        logger.info(f"Processing case: {path.stem}")
+        logger.info(f"Processing case {path.stem}...")
         processed_data = read_json(path / config.file_names.processed_data)
         final_data = {}
         final_data["case_id"] = processed_data["case_id"]
@@ -55,12 +55,8 @@ def main(config: DictConfig) -> None:
         final_data["text"] = text
         final_data["text_anonymized"] = text_anon
 
-        text_len = len(text)
-        text_anon_len = len(text_anon)
-        logger.info(f"len of `text`: {text_len}")
-        logger.info(f"len of `text_anon`: {text_anon_len}")
-        if text_len < 10:
-            print("aloha")
+        final_data["text_len"] = len(text)
+        final_data["text_anon_len"] = len(text_anon)
 
         append_jsonl(final_data, dataset_path)
 
@@ -75,12 +71,9 @@ def _get_text(processed_data: dict, config: DictConfig) -> Tuple[str, str]:
         # For main `text` use text extracted with Tika.
         # If Tika hasn't been able to read any text,
         # then use text extracted from each page with easyocr.
-        logger.info("No anonymization")
         if pdf_data["text_tika"]:
             text = pdf_data["text_tika"]
-            logger.info("`text` from Tika")
         else:
-            logger.info("No text extracted with Tika. `text` from easyocr.")
             text = _get_text_from_pages(pdf_data["pages"])
 
         text_anon = ""
