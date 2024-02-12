@@ -1,0 +1,51 @@
+paths:
+  test_data_raw_dir: tests/data/processor/raw/
+
+
+
+
+gpu: False
+
+max_y_difference: 25
+
+neighbor_distance_max: 1
+
+box_area_min: 2500
+box_height_min: 35
+box_height_upper: 110
+box_width_min: 35
+box_accept_ratio: 0.6
+
+box_split_white_space: 7
+shift_up: 0
+iou_overlap_threshold: 0.5
+indices_to_split_edge_min_length: 5
+edge_accept_ratio: 0.95
+indices_to_split_row_diff: 45
+max_scale: 1.5
+
+anonymized_box_crop_padding: 3
+
+make_split_between_overlapping_box_and_line_height_max: 30
+
+box_split_delta: 2
+
+
+threshold_binarize_process_image: 50
+threshold_binarize_anonymized_boxes: 75
+threshold_binarize_empty_box: 100
+threshold_binarize_top_page: 230
+threshold_binarize_process_crop: 200
+threshold_gap: 11
+threshold_box_confidence: 0.3
+threshold_remove_boundary_height: 20
+
+
+
+
+
+
+
+
+
+

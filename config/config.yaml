@@ -32,48 +32,43 @@ file_names:
   dataset: dataset.jsonl
 
 # Constants
-## Scrape
-sleep: 5
-max_consecutive_nonexistent_page_count: 100
 
 ## Process
-gpu: False
+# gpu: False
 
-max_y_difference: 25
+# max_y_difference: 25
 
-neighbor_distance_max: 1
+# neighbor_distance_max: 1
 
-box_area_min: 2500
-box_height_min: 35
-box_height_upper: 110
-box_width_min: 35
-box_accept_ratio: 0.6
-box_split_white_space: 7
-shift_up: 0
-iou_overlap_threshold: 0.5
-indices_to_split_edge_min_length: 5
-edge_accept_ratio: 0.95
-indices_to_split_row_diff: 45
-max_scale: 1.5
+# box_area_min: 2500
+# box_height_min: 35
+# box_height_upper: 110
+# box_width_min: 35
 
-anonymized_box_crop_padding: 3
+# box_split_white_space: 7
+# shift_up: 0
+# iou_overlap_threshold: 0.5
+# indices_to_split_edge_min_length: 5
+# edge_accept_ratio: 0.95
+# indices_to_split_row_diff: 45
+# max_scale: 1.5
 
-refine_box_padding: 2
+# anonymized_box_crop_padding: 3
 
-make_split_between_overlapping_box_and_line_height_max: 30
-make_split_between_overlapping_box_and_line_width: 12
 
-box_split_delta: 2
+# make_split_between_overlapping_box_and_line_height_max: 30
 
-threshold_binarize_process: 50
-threshold_binarize_anonymized_boxes: 75
-threshold_binarize_split_indices: 100
-threshold_binarize_empty_box: 100
-threshold_binarize_top_page: 230
-threshold_gap: 11
-threshold_box_confidence: 0.3
-threshold_binarize_process_crop: 200
-threshold_remove_boundary_height: 20
+# box_split_delta: 2
+
+# threshold_binarize_process_image: 50
+# threshold_binarize_anonymized_boxes: 75
+
+# threshold_binarize_empty_box: 100
+# threshold_binarize_top_page: 230
+# threshold_gap: 11
+# threshold_box_confidence: 0.3
+# threshold_binarize_process_crop: 200
+# threshold_remove_boundary_height: 20
 threshold_remove_boundary_length: 50
 threshold_remove_boundary_closely_square: 3
 threshold_remove_boundary_too_few_pixels: 10

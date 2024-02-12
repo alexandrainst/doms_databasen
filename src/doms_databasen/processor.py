@@ -98,7 +98,7 @@ class Processor(PDFTextReader):
         processed_data["pdf_data"] = pdf_data
         processed_data["process_info"] = {
             "process_time": time.time() - start,
-            "hardware_used": "gpu" if self.config.gpu else "cpu",
+            "hardware_used": "gpu" if self.config.process.gpu else "cpu",
         }
 
         if not self.config.testing:

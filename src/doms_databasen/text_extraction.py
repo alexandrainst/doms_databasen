@@ -50,7 +50,7 @@ class PDFTextReader:
 
     def __init__(self, config: DictConfig):
         self.config = config
-        self.reader = easyocr.Reader(["da"], gpu=config.gpu)
+        self.reader = easyocr.Reader(["da"], gpu=config.process.gpu)
 
     def extract_text(self, pdf_path: Path | str) -> str:
         """Extracts text from a PDF using easyocr or pypdf.
@@ -518,13 +518,13 @@ class PDFTextReader:
         cell_box = self._cell_to_box(cell)
         crop = self._box_to_crop(box=cell_box, image=inverted)
         if self._empty_image(
-            image=crop, binarize_threshold=self.config.threshold_binarize_empty_box
+            image=crop, binarize_threshold=self.config.process.threshold_binarize_empty_box
         ):
             cell.value = ""
             return
 
         binary = self._binarize(
-            image=crop, threshold=self.config.threshold_binarize_empty_box
+            image=crop, threshold=self.config.process.threshold_binarize_empty_box
         )
         split_indices = self._multiple_lines(binary=binary)
         if not split_indices:
@@ -538,22 +538,22 @@ class PDFTextReader:
         for cell_box_ in cell_boxes:
             crop = self._box_to_crop(box=cell_box_, image=inverted)
             if self._empty_image(
-                image=crop, binarize_threshold=self.config.threshold_binarize_empty_box
+                image=crop, binarize_threshold=self.config.process.threshold_binarize_empty_box
             ):
                 continue
 
             crop_cleaned = self._remove_boundary_noise(
-                crop=crop, binary_threshold=self.config.threshold_binarize_empty_box
+                crop=crop, binary_threshold=self.config.process.threshold_binarize_empty_box
             )
             if self._empty_image(
                 image=crop_cleaned,
-                binarize_threshold=self.config.threshold_binarize_empty_box,
+                binarize_threshold=self.config.process.threshold_binarize_empty_box,
             ):
                 continue
 
             crops_to_read = self._process_crop_before_read(
                 crop=crop_cleaned,
-                binary_threshold=self.config.threshold_binarize_empty_box,
+                binary_threshold=self.config.process.threshold_binarize_empty_box,
                 refine_padding=self.config.cell_box_crop_padding,
                 cell=True,
             )
@@ -920,13 +920,13 @@ class PDFTextReader:
         edge_blobs = self._get_blobs(binary=edges, sort_function=sort_function)
 
         for blob in edge_blobs:
-            if not blob.area_convex / blob.area_bbox > self.config.edge_accept_ratio:
+            if not blob.area_convex / blob.area_bbox > self.config.process.edge_accept_ratio:
                 continue
             row_min, col_min, row_max, col_max = blob.bbox
             height = row_max - row_min
             if (
                 height
-                < self.config.make_split_between_overlapping_box_and_line_height_max
+                < self.config.process.make_split_between_overlapping_box_and_line_height_max
             ):
                 break
 
@@ -954,7 +954,7 @@ class PDFTextReader:
         """
         return (
             self._intersection_over_union(box_1=box_1, box_2=box_2)
-            > self.config.iou_overlap_threshold
+            > self.config.process.iou_overlap_threshold
         )
 
     def _intersection_over_union(self, box_1: dict, box_2: dict) -> float:
@@ -1072,7 +1072,7 @@ class PDFTextReader:
         """
         logo_binary = self._binarize(
             image=page_top,
-            threshold=self.config.threshold_binarize_top_page,
+            threshold=self.config.process.threshold_binarize_top_page,
             val_min=0,
             val_max=255,
         )
@@ -1094,7 +1094,7 @@ class PDFTextReader:
             bool:
                 True if the two bounding boxes are on the same line. False otherwise.
         """
-        return abs(y - y_prev) < self.config.max_y_difference
+        return abs(y - y_prev) < self.config.process.max_y_difference
 
     def _process_image(
         self, image: np.ndarray, anonymized_boxes: List[dict], underlines: List[tuple]
@@ -1139,7 +1139,7 @@ class PDFTextReader:
         opened = cv2.morphologyEx(filled, cv2.MORPH_OPEN, np.ones((30, 30)))
         opened_binary = self._binarize(
             image=opened,
-            threshold=self.config.threshold_binarize_process,
+            threshold=self.config.process.threshold_binarize_process_image,
             val_min=0,
             val_max=255,
         )
@@ -1622,18 +1622,18 @@ class PDFTextReader:
 
         crop = self._box_to_crop(box=anonymized_box, image=image)
         if self._empty_image(
-            image=crop, binarize_threshold=self.config.threshold_binarize_process_crop
+            image=crop, binarize_threshold=self.config.process.threshold_binarize_process_crop
         ):
             anonymized_box["text"] = ""
             return anonymized_box
 
         crop_cleaned = self._remove_boundary_noise(
             crop=crop.copy(),
-            binary_threshold=self.config.threshold_binarize_process_crop,
+            binary_threshold=self.config.process.threshold_binarize_process_crop,
         )
         if self._empty_image(
             image=crop_cleaned,
-            binarize_threshold=self.config.threshold_binarize_process_crop,
+            binarize_threshold=self.config.process.threshold_binarize_process_crop,
         ):
             anonymized_box["text"] = ""
             return anonymized_box
@@ -1641,14 +1641,14 @@ class PDFTextReader:
         crop_refined, anonymized_box_refined = self._refine_box(
             crop=crop_cleaned,
             box=anonymized_box,
-            padding=self.config.anonymized_box_crop_padding,
-            binary_threshold=self.config.threshold_binarize_process_crop,
+            padding=self.config.process.anonymized_box_crop_padding,
+            binary_threshold=self.config.process.threshold_binarize_process_crop,
         )
         if (
             crop_refined is False
             or self._empty_image(
                 image=crop_refined,
-                binarize_threshold=self.config.threshold_binarize_process_crop,
+                binarize_threshold=self.config.process.threshold_binarize_process_crop,
             )
             or self._too_small(crop=crop_refined, anonymized_box=anonymized_box_refined)
         ):
@@ -1664,8 +1664,8 @@ class PDFTextReader:
         if len(anonymized_boxes) == 1:
             crops_to_read = self._process_crop_before_read(
                 crop=crop_refined,
-                binary_threshold=self.config.threshold_binarize_process_crop,
-                refine_padding=self.config.anonymized_box_crop_padding,
+                binary_threshold=self.config.process.threshold_binarize_process_crop,
+                refine_padding=self.config.process.anonymized_box_crop_padding,
             )
             text = self._read_text_from_crop(crops=crops_to_read)
             anonymized_box["text"] = f"<anonym>{text}</anonym>" if text else ""
@@ -1678,14 +1678,14 @@ class PDFTextReader:
             )
             if self._empty_image(
                 image=crop,
-                binarize_threshold=self.config.threshold_binarize_process_crop,
+                binarize_threshold=self.config.process.threshold_binarize_process_crop,
             ):
                 continue
 
             crops_to_read = self._process_crop_before_read(
                 crop=crop,
-                binary_threshold=self.config.threshold_binarize_process_crop,
-                refine_padding=self.config.anonymized_box_crop_padding,
+                binary_threshold=self.config.process.threshold_binarize_process_crop,
+                refine_padding=self.config.process.anonymized_box_crop_padding,
             )
 
             # Read text from image with easyocr
@@ -1755,7 +1755,7 @@ class PDFTextReader:
             [
                 box["text"]
                 for box in boxes
-                if box["confidence"] > self.config.threshold_box_confidence
+                if box["confidence"] > self.config.process.threshold_box_confidence
             ]
         )
         return text
@@ -1954,7 +1954,7 @@ class PDFTextReader:
         crop_scaled = np.array(crop_scaled / crop_scaled.max() * 255, dtype=np.uint8)
 
         crop_boundary = self._add_boundary(
-            image=crop_scaled, padding=self.config.anonymized_box_crop_padding
+            image=crop_scaled, padding=self.config.process.anonymized_box_crop_padding
         )
         if cell:
             return [crop_boundary]
@@ -1967,7 +1967,7 @@ class PDFTextReader:
             * 255
         )
         sharpened_boundary = self._add_boundary(
-            image=sharpened, padding=self.config.anonymized_box_crop_padding
+            image=sharpened, padding=self.config.process.anonymized_box_crop_padding
         )
 
         crops_to_read = [crop_boundary, sharpened_boundary]
@@ -1989,7 +1989,7 @@ class PDFTextReader:
             scale = 1
             return scale
         scale = LENGTH_SIX_LETTERS / box_length
-        scale = min(scale, self.config.max_scale)
+        scale = min(scale, self.config.process.max_scale)
         return scale
 
     def _scale_image(self, image: np.ndarray, scale: float) -> np.ndarray:
@@ -2102,7 +2102,7 @@ class PDFTextReader:
 
         binary = self._binarize(
             image=averaged,
-            threshold=self.config.threshold_binarize_anonymized_boxes,
+            threshold=self.config.process.threshold_binarize_anonymized_boxes,
             val_min=0,
             val_max=255,
         )
@@ -2125,14 +2125,14 @@ class PDFTextReader:
         anonymized_boxes = []
         for blob in blobs:
 
-            if blob.area < self.config.box_area_min:
+            if blob.area < self.config.process.box_area_min:
                 # Blob is too small to be considered an anonymized box.
                 break
 
             if not self._conditions_for_box(blob=blob):
                 continue
             height = blob.bbox[2] - blob.bbox[0]
-            if height > self.config.box_height_upper:
+            if height > self.config.process.box_height_upper:
                 logger.info("Blob not splitted correctly with initial methods.")
                 anonymized_boxes += self._split_blob_to_multiple_boxes(blob=blob)
             else:
@@ -2184,8 +2184,8 @@ class PDFTextReader:
             if booled[i]:
                 count += 1
             else:
-                if count > self.config.box_split_white_space:
-                    row_splits.append(i - self.config.box_split_white_space // 2)
+                if count > self.config.process.box_split_white_space:
+                    row_splits.append(i - self.config.process.box_split_white_space // 2)
                 count = 0
         for row in row_splits:
             blob_image[row, :] = 0
@@ -2194,7 +2194,7 @@ class PDFTextReader:
 
         boxes = []
         for blob in blobs:
-            if blob.area < self.config.box_area_min:
+            if blob.area < self.config.process.box_area_min:
                 # Blob is too small to be considered an anonymized box.
                 break
             if not self._conditions_for_box(blob=blob):
@@ -2210,7 +2210,7 @@ class PDFTextReader:
     def _split_boxes_vertically(self, binary: np.ndarray) -> np.ndarray:
         blobs = self._get_blobs(binary=binary)
         for blob in blobs:
-            if blob.area_bbox < self.config.box_area_min:
+            if blob.area_bbox < self.config.process.box_area_min:
                 break
             blob_image = np.array(blob.image * 255, dtype=np.uint8)
             closed = cv2.morphologyEx(blob_image, cv2.MORPH_CLOSE, np.ones((20, 1)))
@@ -2284,7 +2284,7 @@ class PDFTextReader:
         row_min = rows[row_min_idx]
         row_max = rows[row_max_idx] + 1
 
-        box_coordinates = [row_min - self.config.shift_up, col_min, row_max, col_max]
+        box_coordinates = [row_min - self.config.process.shift_up, col_min, row_max, col_max]
         return box_coordinates
 
     def _conditions_for_box(self, blob: RegionProperties) -> bool:
@@ -2302,9 +2302,9 @@ class PDFTextReader:
         box_width = blob.bbox[3] - blob.bbox[1]
 
         return (
-            blob.area_convex / blob.area_bbox > self.config.box_accept_ratio
-            and box_height > self.config.box_height_min
-            and box_width > self.config.box_width_min
+            blob.area_convex / blob.area_bbox > self.config.process.box_accept_ratio
+            and box_height > self.config.process.box_height_min
+            and box_width > self.config.process.box_width_min
         )
 
     def _split_boxes_in_image(self, inverted: np.ndarray) -> np.ndarray:
@@ -2326,7 +2326,7 @@ class PDFTextReader:
 
         # First split multiple boxes into separate boxes
         for blob in blobs:
-            if blob.area_bbox < self.config.box_area_min:
+            if blob.area_bbox < self.config.process.box_area_min:
                 break
             row_min, col_min, row_max, col_max = blob.bbox
 
@@ -2346,7 +2346,7 @@ class PDFTextReader:
 
                 # Split
                 for row_idx in row_indices_to_split:
-                    row_idx_ = row_min + row_idx - self.config.box_split_delta
+                    row_idx_ = row_min + row_idx - self.config.process.box_split_delta
                     inverted[row_idx_, col_min : col_max + 1] = 0
 
         return inverted
@@ -2392,12 +2392,12 @@ class PDFTextReader:
         rows_to_split = [
             row
             for row in rows_to_split
-            if edge_lengths[row] > self.config.indices_to_split_edge_min_length
+            if edge_lengths[row] > self.config.process.indices_to_split_edge_min_length
         ]
 
         for i in range(len(rows_to_split) - 1, 0, -1):
             diffs = [abs(rows_to_split[i] - rows_to_split[j]) for j in range(i)]
-            if min(diffs) < self.config.indices_to_split_row_diff:
+            if min(diffs) < self.config.process.indices_to_split_row_diff:
                 rows_to_split.pop(i)
 
         return rows_to_split
@@ -2426,8 +2426,8 @@ class PDFTextReader:
                 True if conditions for splitting are met. False otherwise.
         """
         return (
-            length > self.config.indices_to_split_edge_min_length
-            and idx - predesessor_idx > self.config.indices_to_split_row_diff
+            length > self.config.process.indices_to_split_edge_min_length
+            and idx - predesessor_idx > self.config.process.indices_to_split_row_diff
         )
 
     def _get_edge_lengths(self, edges_h: np.ndarray):
@@ -2586,7 +2586,7 @@ class PDFTextReader:
         else:
             # Arrays are seen as having white pixel neighbors if the Manhattan distance is
             # between two white pixels of the arrays is less than 2.
-            return distances.min() <= self.config.neighbor_distance_max
+            return distances.min() <= self.config.process.neighbor_distance_max
 
     @staticmethod
     def _not_only_white(a: np.ndarray) -> bool:
@@ -2796,7 +2796,7 @@ class PDFTextReader:
 
     def _height_length_condition(self, height: int, length: int) -> bool:
         return (
-            height < self.config.threshold_remove_boundary_height
+            height < self.config.process.threshold_remove_boundary_height
             or length > self.config.threshold_remove_boundary_length
         )
 
@@ -2934,7 +2934,7 @@ class PDFTextReader:
         inverted = cv2.bitwise_not(crop)
 
         binary = self._binarize(
-            inverted, threshold=255 - self.config.threshold_binarize_process_crop
+            inverted, threshold=255 - self.config.process.threshold_binarize_process_crop
         )
 
         # One bool value for each column.
@@ -2943,7 +2943,7 @@ class PDFTextReader:
         start_idx = np.where(booled == 0)[0][0]
 
         cumsum_reset_0 = self._cumsum_reset_0(booled[start_idx:])
-        gap_indices = np.where(cumsum_reset_0 > self.config.threshold_gap)[0]
+        gap_indices = np.where(cumsum_reset_0 > self.config.process.threshold_gap)[0]
         if not gap_indices.size:
             return []
 
@@ -2952,7 +2952,7 @@ class PDFTextReader:
             if gap_indices[i] - gap_indices[i - 1] > 1:
                 gap_indices_.append(gap_indices[i])
 
-        gap_half = self.config.threshold_gap // 2
+        gap_half = self.config.process.threshold_gap // 2
         split_indices = [start_idx + x - gap_half for x in gap_indices_]
         return split_indices
 
