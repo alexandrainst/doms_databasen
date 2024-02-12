@@ -17,22 +17,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Poetry
-        run: pip3 install poetry==1.4.0
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-          cache: "poetry"
 
       - name: Install Dependencies
         run: |
-          poetry env use "${{ matrix.python-version }}"
-          poetry install --no-interaction --no-cache
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
 
       - name: Build documentation
-        run: poetry run pdoc --docformat google src/doms_databasen -o docs
+        run: pip install pdoc==7.3.0 && pdoc --docformat google src/doms_databasen -o docs
 
       - name: Compress documentation
         run: tar --directory docs/ -hcf artifact.tar .
