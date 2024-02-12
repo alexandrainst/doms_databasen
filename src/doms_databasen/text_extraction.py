@@ -4,7 +4,7 @@ import re
 import tempfile
 from logging import getLogger
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Mapping
 
 import cv2
 import easyocr
@@ -66,8 +66,6 @@ class PDFTextReader:
                 Path to PDF.
 
         Returns:
-            pdf_text (str):
-                Text from PDF.
             pdf_data (dict):
                 Data about PDF - which anonymization that is used,
                 and text + extraction method for each page.
@@ -189,7 +187,7 @@ class PDFTextReader:
         """
         pdf_data = {}
         anonymization_method = self._anonymization_used(
-            box_anonymization, underline_anonymization
+            box_anonymization=box_anonymization, underline_anonymization=underline_anonymization
         )
         pdf_data["anonymization_method"] = anonymization_method
         pdf_data["pages"] = pages
@@ -220,20 +218,6 @@ class PDFTextReader:
         elif underline_anonymization:
             return self.config.anon_method.underline
 
-    def _get_text_from_pages(self, pages: dict) -> str:
-        """Get text from pages.
-
-        Args:
-            pages (dict):
-                Pages with text and extraction method.
-
-        Returns:
-            pdf_text (str):
-                Text from pages.
-        """
-        pdf_text = "\n\n".join(page["text"] for page in pages.values())
-        return pdf_text
-
     def _get_main_text_boxes(self, image: np.ndarray) -> List[dict]:
         """Read main text of page.
 
@@ -245,9 +229,9 @@ class PDFTextReader:
             main_text_boxes (List[dict]):
                 List of boxes with coordinates and text.
         """
-        result = self.reader.readtext(image)
+        result = self.reader.readtext(image=image)
 
-        main_text_boxes = [self._change_box_format(box) for box in result]
+        main_text_boxes = [self._change_box_format(easyocr_box=box) for box in result]
         return main_text_boxes
 
     def _extract_anonymized_boxes(self, image: np.ndarray) -> List[dict]:
@@ -305,8 +289,11 @@ class PDFTextReader:
         ]
         return anonymized_boxes_underlines_, underlines
 
-    def _get_images(self, pdf_path):
+    def _get_images(self, pdf_path: Path | str) -> Mapping[np.ndarray]:
         """Get images from PDF.
+
+        Returns all images from PDF, except if debugging a single page.
+        In that case page self.config.process.page_number is returned.
 
         Args:
             pdf_path (Path):
@@ -314,7 +301,7 @@ class PDFTextReader:
 
         Returns:
             images (List[np.ndarray]):
-                List of images.
+                Map of images from PDF.
         """
         if self.config.process.page_number:
             # Used for debugging a single page
@@ -328,7 +315,7 @@ class PDFTextReader:
                 ),
             )
         else:
-            images = map(np.array, convert_from_path(pdf_path, dpi=DPI))
+            images = map(np.array, convert_from_path(pdf_path=pdf_path, dpi=DPI))
 
         # Grayscale
         images = map(lambda image: cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), images)
@@ -361,7 +348,7 @@ class PDFTextReader:
         for table in tables:
             self._read_table(table=table, image=image)
 
-        table_boxes = [self._table_to_box_format(table) for table in tables]
+        table_boxes = [self._table_to_box_format(table=table) for table in tables]
 
         return table_boxes
 
@@ -553,11 +540,11 @@ class PDFTextReader:
                 Subimage of cell.
 
         Returns:
-            (str):
+            text (str):
                 Text from subimage of cell.
         """
 
-        result = self.reader.readtext(crop_refined)
+        result = self.reader.readtext(image=crop_refined)
         if not result:
             text = ""
         else:
@@ -583,31 +570,6 @@ class PDFTextReader:
                 Result sorted by x-coordinate.
         """
         return sorted(result, key=lambda x: x[0][0][0])
-
-    def _add_text(self, text: str, all_text: str) -> str:
-        """Add text from subimage of cell to all text from cell.
-
-        Args:
-            text (str):
-                Text from subimage of cell.
-            all_text (str):
-                All text from cell.
-
-        Returns:
-            all_text (str):
-                All text from cell.
-        """
-        if not all_text:
-            all_text = text
-        else:
-            # all_text[-1] is `\n`
-            if len(all_text) < 2:
-                sep = ""
-            else:
-                sep = "" if all_text[-2] == "-" else " "
-            all_text += f"{sep}{text}"
-
-        return all_text
 
     def _split_cell_box(
         self, cell_box: TableCell, split_indices: List[int]
@@ -703,7 +665,7 @@ class PDFTextReader:
         return split_indices
 
     @staticmethod
-    def _get_blobs(binary: np.ndarray, sort_function=None) -> list:
+    def _get_blobs(binary: np.ndarray, sort_function=None) -> List[RegionProperties]:
         """Get blobs from binary image.
 
         Find all blobs in a binary image, and return the
@@ -720,8 +682,8 @@ class PDFTextReader:
         if sort_function is None:
             sort_function = lambda blob: blob.area_bbox
 
-        labels = measure.label(binary, connectivity=1)
-        blobs = measure.regionprops(labels)
+        labels = measure.label(label_image=binary, connectivity=1)
+        blobs = measure.regionprops(label_image=labels)
         blobs = sorted(blobs, key=sort_function, reverse=True)
         return blobs
 
@@ -759,8 +721,7 @@ class PDFTextReader:
             if not underline:
                 continue
 
-            row_min, col_min, row_max, col_max = underline
-            height = row_max - row_min
+            row_min, col_min, _, col_max = underline
 
             expand = self.config.process.underline_box_expand
             box_row_min = row_min - self.config.process.underline_box_height
@@ -862,39 +823,6 @@ class PDFTextReader:
         col_max = cols.max()
         length = col_max - col_min + 1
         return length
-
-    def _make_split_between_overlapping_box_and_line(
-        self, binary: np.ndarray
-    ) -> np.ndarray:
-        """Make split between overlapping box and underline.
-
-        Args:
-            binary (np.ndarray):
-                Binary image.
-
-        Returns:
-            binary (np.ndarray):
-                Binary image with split between overlapping box and underline.
-        """
-        edges = self._get_vertical_edges(binary=binary)
-        sort_function = lambda blob: blob.bbox[2] - blob.bbox[0]
-        edge_blobs = self._get_blobs(binary=edges, sort_function=sort_function)
-
-        for blob in edge_blobs:
-            if not blob.area_convex / blob.area_bbox > self.config.process.edge_accept_ratio:
-                continue
-            row_min, col_min, row_max, col_max = blob.bbox
-            height = row_max - row_min
-            if (
-                height
-                < self.config.process.make_split_between_overlapping_box_and_line_height_max
-            ):
-                break
-
-            row_min, col_min, row_max, col_max = blob.bbox
-            p = self.config.make_split_between_overlapping_box_and_line_width
-            binary[row_min - p : row_max + p, col_min:col_max] = 0
-        return binary
 
     def _too_much_overlap(self, box_1: dict, box_2: dict) -> bool:
         """Used to determine if two boxes overlap too much.
@@ -2127,6 +2055,16 @@ class PDFTextReader:
         return blob_image
 
     def _split_blob_to_multiple_boxes(self, blob: RegionProperties) -> List[dict]:
+        """This function is called if a blob is not splitted correctly with initial methods.
+        
+        Args:
+            blob (RegionProperties):
+                Blob to split into multiple boxes.
+
+        Returns:
+            List[dict]:
+                List of anonymized boxes.
+        """
         blob_image = np.array(blob.image * 255, dtype=np.uint8)
         blob_image = self._remove_black_border(blob_image=blob_image)
 
@@ -2169,6 +2107,16 @@ class PDFTextReader:
         return boxes
 
     def _split_boxes_vertically(self, binary: np.ndarray) -> np.ndarray:
+        """Split vertically overlapping boxes.
+        
+        Args:
+            binary (np.ndarray):
+                Binary image.
+
+        Returns:
+            np.ndarray:
+                Binary image with vertically overlapping boxes split.
+        """
         blobs = self._get_blobs(binary=binary)
         for blob in blobs:
             if blob.area_bbox < self.config.process.box_area_min:
@@ -2363,34 +2311,6 @@ class PDFTextReader:
 
         return rows_to_split
 
-    def _group_max(self, group, edge_lengths):
-        # TODO
-        idx = group[0]
-        for i in group[1:]:
-            if edge_lengths[i] > edge_lengths[idx]:
-                idx = i
-        return idx
-
-    def _split_conditions(self, length: int, idx: int, predesessor_idx: int) -> bool:
-        """Checks if conditions for splitting are met.
-
-        Args:
-            length (int):
-                Length of edge.
-            idx (int):
-                Index of edge.
-            predesessor_idx (int):
-                Index of previous edge.
-
-        Returns:
-            bool:
-                True if conditions for splitting are met. False otherwise.
-        """
-        return (
-            length > self.config.process.indices_to_split_edge_min_length
-            and idx - predesessor_idx > self.config.process.indices_to_split_row_diff
-        )
-
     def _get_edge_lengths(self, edges_h: np.ndarray):
         """Get lengths of horizontal edges.
 
@@ -2497,74 +2417,6 @@ class PDFTextReader:
         edges_h = np.abs(edges_h)
         edges_h = np.array(edges_h * 255, dtype=np.uint8)
         return edges_h
-
-    def _get_vertical_edges(self, binary: np.ndarray) -> np.ndarray:
-        """Get vertical edges from image.
-
-        Args:
-            binary (np.ndarray):
-                Image to get vertical edges from.
-
-        Returns:
-            np.ndarray:
-                All vertical edges.
-        """
-        edges_v = skimage.filters.sobel_v(binary)
-        edges_v = np.abs(edges_v)
-        edges_v = np.array(edges_v * 255, dtype=np.uint8)
-        return edges_v
-
-    def _has_neighboring_white_pixels(self, a: np.ndarray, b: np.ndarray) -> bool:
-        """Checks if two arrays have neighboring white pixels.
-
-        The two arrays are said to have neighboring white pixels,
-        if `a` has a white pixel at index i and `b` has a white pixel at index j,
-        and abs(i - j) < 2.
-
-        The arrays must be of same size.
-
-        The function is used in the `_refine_`.
-
-        Args:
-            a (np.ndarray):
-                Array of 0s and 1s.
-            b (np.ndarray):
-                Array of 0s and 1s.
-
-        Returns:
-            bool:
-                True if `a` and `b` have neighboring white pixels. False otherwise.
-        """
-        # Check if a and b have neighboring white pixels.
-        assert len(a) == len(b), "Arrays must be of same size."
-        a_indices = np.where(a != 0)[0]
-        b_indices = np.where(b != 0)[0]
-        distances = np.abs(a_indices - b_indices[:, None])  # Manhattan distance
-
-        if len(distances) == 0:
-            # Edge case if at least one of the arrays is all zeros.
-            return False
-        else:
-            # Arrays are seen as having white pixel neighbors if the Manhattan distance is
-            # between two white pixels of the arrays is less than 2.
-            return distances.min() <= self.config.process.neighbor_distance_max
-
-    @staticmethod
-    def _not_only_white(a: np.ndarray) -> bool:
-        """Checks if binary array is not only white.
-
-        The function is used in the `_refine_`.
-
-        Args:
-            a (np.ndarray):
-                Binary array.
-
-        Returns:
-            bool:
-                True if binary array is not only white. False otherwise.
-
-        """
-        return not np.all(np.bool_(a))
 
     @staticmethod
     def _binarize(
@@ -2756,12 +2608,38 @@ class PDFTextReader:
         return np.min(concatenated, axis=1)
 
     def _height_length_condition(self, height: int, length: int) -> bool:
+        """Check if height and length of blob meets condition.
+        
+        Args:
+            height (int):
+                Height of blob.
+            length (int):
+                Length of blob.
+
+        Returns:
+            bool:
+                True if height and length of blob meets condition. False otherwise.
+        """
         return (
             height < self.config.process.threshold_remove_boundary_height
             or length > self.config.process.threshold_remove_boundary_length
         )
 
     def _closely_square(self, height: int, length: int) -> bool:
+        """Check if blob is closely square.
+
+        'Closely square' if the height and length of the blob are almost equal.
+        
+        Args:
+            height (int):
+                Height of blob.
+            length (int):
+                Length of blob.
+
+        Returns:
+            bool:
+                True if blob is closely square. False otherwise.
+        """
         return (
             abs(height - length) < self.config.process.threshold_remove_boundary_closely_square
         )
@@ -2787,26 +2665,6 @@ class PDFTextReader:
             if boundary in blob.bbox:
                 return True
         return False
-
-    @staticmethod
-    def _has_center_pixels(binary_crop: np.ndarray, blob: RegionProperties) -> bool:
-        """Check if blob has pixels in the center (vertically) of the image.
-
-        Used in _remove_boundary_noise to determine if a blob is noise or not.
-
-        Args:
-            binary_crop (np.ndarray):
-                Anonymized box.
-            blob (skimage.measure._regionprops._RegionProperties):
-                A blob in the image.
-
-        Returns:
-            bool:
-                True if blob has pixels in the center (vertically) of the image. False otherwise.
-        """
-        image_midpoint = binary_crop.shape[0] // 2
-        row_min, _, row_max, _ = blob.bbox
-        return row_min < image_midpoint < row_max
 
     def _split_box(self, crop: np.ndarray, anonymized_box: dict) -> List[dict]:
         """Split box into multiple boxes - one for each word.
