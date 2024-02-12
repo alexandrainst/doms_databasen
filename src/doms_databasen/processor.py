@@ -77,7 +77,9 @@ class Processor(PDFTextReader):
 
         # If case has already been processed, skip, unless force=True.
         if self._already_processed(case_dir_processed) and not self.force:
-            logger.info(f"Case {case_id} has already been processed. Use --force to overwrite.")
+            logger.info(
+                f"Case {case_id} has already been processed. Use --force to overwrite."
+            )
             return
 
         # Process data for the case.

@@ -242,9 +242,13 @@ def test_remove_boundary_noise(pdf_text_reader, config, image_path, binary_thres
     N, M = image.shape
     image_clean = pdf_text_reader._remove_boundary_noise(image.copy(), binary_threshold)
     assert (image_clean[:, 0] <= config.process.threshold_binarize_process_crop).all()
-    assert (image_clean[:, M - 1] <= config.process.threshold_binarize_process_crop).all()
+    assert (
+        image_clean[:, M - 1] <= config.process.threshold_binarize_process_crop
+    ).all()
     assert (image_clean[0, :] <= config.process.threshold_binarize_process_crop).all()
-    assert (image_clean[N - 1, :] <= config.process.threshold_binarize_process_crop).all()
+    assert (
+        image_clean[N - 1, :] <= config.process.threshold_binarize_process_crop
+    ).all()
 
 
 @pytest.mark.parametrize(
