@@ -1,5 +1,6 @@
 test:
-	pytest
+	pytest tests/scraper && \
+	pytest tests/processor
 format:
 	isort .
 	black .

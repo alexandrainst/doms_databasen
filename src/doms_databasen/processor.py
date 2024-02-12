@@ -8,7 +8,7 @@ from omegaconf import DictConfig
 
 from .constants import N_FILES_PROCESSED_CASE_DIR, N_FILES_RAW_CASE_DIR
 from .text_extraction import PDFTextReader
-from .utils import read_json, save_dict_to_json, load_jsonl
+from .utils import load_jsonl, read_json, save_dict_to_json
 
 logger = getLogger(__name__)
 
@@ -34,12 +34,19 @@ class Processor(PDFTextReader):
     def __init__(self, config: DictConfig) -> None:
         super().__init__(config=config)
         self.config = config
+
         self.data_raw_dir = (
             Path(self.config.paths.data_raw_dir)
             if not self.config.testing
             else Path(self.config.paths.test_data_raw_dir)
         )
-        self.data_processed_dir = Path(self.config.paths.data_processed_dir)
+
+        self.data_processed_dir = (
+            Path(self.config.paths.data_processed_dir)
+            if not self.config.testing
+            else Path(self.config.paths.test_data_processed_dir)
+        )
+
         self.force = self.config.process.force
         self.blacklist = self._read_blacklist()
 
@@ -93,10 +100,6 @@ class Processor(PDFTextReader):
             "process_time": time.time() - start,
             "hardware_used": "gpu" if self.config.gpu else "cpu",
         }
-
-        # Remove anonymization tags from text.
-        # TODO: Just do this in finalize.
-        # text = re.sub(r"<anonym.*</anonym>", "", text_anonymized)
 
         if not self.config.testing:
             save_dict_to_json(
@@ -165,10 +168,10 @@ class Processor(PDFTextReader):
                 True if case has already been scraped. False otherwise.
         """
         return case_dir.exists() and len(os.listdir(case_dir)) == N_FILES_RAW_CASE_DIR
-    
+
     def _read_blacklist(self) -> List[dict]:
         """Reads the blacklised cases.
-        
+
         Returns:
             list of dict:
                 List of blacklisted cases.

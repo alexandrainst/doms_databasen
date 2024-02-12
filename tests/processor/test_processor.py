@@ -22,3 +22,7 @@ def processed_data(config, processor):
 )
 def test_tabular_data(processed_data, key):
     assert processed_data[key]
+
+
+if __name__ == "__main__":
+    pytest.main([__file__ + "::test_tabular_data", "-s"])

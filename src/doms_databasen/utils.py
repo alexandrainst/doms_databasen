@@ -1,6 +1,5 @@
-from typing import List
-
 import json
+from typing import List
 
 import jsonlines
 
@@ -51,8 +50,6 @@ def append_jsonl(data: dict, file_name: str) -> None:
             Data to append.
         file_name (str):
             The name of the JSONL file where the data should be appended.
-        keys_to_str (list):
-            List of keys to convert to string (for example PosixPath objects)
     """
 
     with jsonlines.open(file_name, mode="a") as writer:

@@ -214,11 +214,11 @@ class PDFTextReader:
         # Both will only be true, if not any of
         # the anonymization methods are used.
         if box_anonymization and underline_anonymization:
-            return "none"
+            return self.config.anon_method_none
         elif box_anonymization:
-            return "box"
+            return self.config.anon_method_box
         elif underline_anonymization:
-            return "underline"
+            return self.config.anon_method_underline
 
     def _get_text_from_pages(self, pages: dict) -> str:
         """Get text from pages.
@@ -389,7 +389,10 @@ class PDFTextReader:
         with tempfile.NamedTemporaryFile(suffix=".png") as tmp:
             cv2.imwrite(tmp.name, image)
             table_image = TableImage(src=tmp.name, detect_rotation=False)
-            tables = table_image.extract_tables()
+            try:
+                tables = table_image.extract_tables()
+            except:
+                return []
 
         if not read_tables:
             return tables
@@ -547,7 +550,7 @@ class PDFTextReader:
                 binarize_threshold=self.config.threshold_binarize_empty_box,
             ):
                 continue
-            
+
             crops_to_read = self._process_crop_before_read(
                 crop=crop_cleaned,
                 binary_threshold=self.config.threshold_binarize_empty_box,
@@ -1325,6 +1328,8 @@ class PDFTextReader:
             page_text (str):
                 Text from current page.
         """
+        if not lines:
+            return ""
         text_first_line = self._join_line(line=lines[0])
         page_text = text_first_line
 
@@ -2051,7 +2056,7 @@ class PDFTextReader:
                 return False, None
         else:
             col_first = cols.min()
-        
+
         col_last = cols.max()
         row_first, row_last = rows.min(), rows.max()
         p = padding
@@ -2993,9 +2998,12 @@ class PDFTextReader:
         """
         request_options = {"timeout": 300}
         text = ""
-        result = parser.from_file(pdf_path, requestOptions=request_options)
-        if result["status"] == 200:
-            text = result["content"]
+        try:
+            result = parser.from_file(pdf_path, requestOptions=request_options)
+            if result["status"] == 200:
+                text = result["content"]
+        except:
+            pass
         return text.strip()
 
 

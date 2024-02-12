@@ -8,14 +8,17 @@ hydra:
 domsdatabasen:
   url: https://domsdatabasen.dk/#sag
 
+hf_hub: oliverkinch/domsdatabasen
+
 paths:
   download_dir: download_tmp/
   data_raw_dir: data/raw/
   data_processed_dir: /mnt/data_6tb/oliver/doms_databasen/data/processed
-  data_final_dir: data/final/
+  data_final_dir: /mnt/data_6tb/oliver/doms_databasen/data/final
   test_tmp_dir: tmp/
   # Paths for testing the processor
   test_data_raw_dir: tests/data/processor/raw/
+  test_data_processed_dir: tests/data/processor/processed
   # test_case_dir: test_case/
   blacklists:
     process: data/blacklists/process.jsonl
@@ -104,6 +107,12 @@ threshold_binarize_process_before_table_search: 1
 origin_box: box
 origin_underline: underline
 
+# Anonymization method
+anon_method_underline: underline
+anon_method_box: box
+anon_method_none: none
+
+
 message_pdf_has_no_anonymized_boxes: >
   No anonymized boxes detected on first page 1.
   Therefore, there will not be searched for
@@ -150,7 +159,7 @@ scrape:
 # Process arguments
 process:
   force: False
-  case_id: "113"
+  case_id: "721"
   all: True
   messages:
     give_correct_input: >
@@ -159,7 +168,7 @@ process:
     done: >
       Processing done!
   test_case_id: "1"
-  start_case_id: "113"
+  start_case_id: "2732"
 
 ## Debug
 image_idx: False # page number

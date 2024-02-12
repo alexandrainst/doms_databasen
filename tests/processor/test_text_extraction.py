@@ -184,16 +184,16 @@ def test_get_text_from_boxes(pdf_text_reader, boxes, text_expected):
         ),
         (
             "tests/data/processor/get_text_from_box_9.png",
-            {'coordinates': [474, 1440, 511, 1547], 'origin': 'box'},
+            {"coordinates": [474, 1440, 511, 1547], "origin": "box"},
             False,
             "<anonym>S</anonym>",
         ),
         (
             "tests/data/processor/get_text_from_box_9.png",
-            {'coordinates': [820, 1842, 856, 1928], 'origin': 'box'},
+            {"coordinates": [820, 1842, 856, 1928], "origin": "box"},
             False,
             "",
-        )
+        ),
     ],
 )
 def test_read_text_from_anonymized_box(
@@ -319,13 +319,7 @@ def test_remove_logo(pdf_text_reader, image_path, difference_flag_expected):
             True,
             (2, 4),
         ),
-        (
-            "tests/data/processor/image_processed_with_no_tables.png",
-            0, 
-            [], 
-            True, 
-            None
-            ),
+        ("tests/data/processor/image_processed_with_no_tables.png", 0, [], True, None),
         (
             "tests/data/processor/page_with_table_1.png",
             1,

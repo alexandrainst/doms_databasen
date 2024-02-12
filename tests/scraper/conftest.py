@@ -1,6 +1,5 @@
 """Session-wide fixtures for tests."""
 
-import random
 import shutil
 
 import pytest
@@ -22,17 +21,17 @@ def config():
 
 @pytest.fixture(scope="session")
 def scraper(config):
-    return DomsDatabasenScraper(cfg=config)
+    return DomsDatabasenScraper(config=config)
 
 
 def pytest_sessionstart(session):
     """Scrape a single random case before running tests."""
-    cfg = compose(
+    config = compose(
         config_name="config",
         overrides=["testing=True"],
     )
-    scraper = DomsDatabasenScraper(cfg=cfg)
-    case_id = str(cfg.scrape.test_case_id)
+    scraper = DomsDatabasenScraper(config=config)
+    case_id = str(config.scrape.test_case_id)
     scraper.scrape(case_id)
 
     session.__CACHE = scraper.test_dir
