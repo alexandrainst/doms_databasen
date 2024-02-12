@@ -1,7 +1,7 @@
 <a href="https://github.com/alexandrainst/doms_databasen"><img src="gfx/alexandra_logo.png" width="239" height="175" align="right" /></a>
 # doms_databasen
 
-Scraping af [domsdatabasen](https://domsdatabasen.dk/#), der for nyligt er udgivet som åben data.
+Scraping og processering af [domsdatabasen](https://domsdatabasen.dk/#)
 
 Hver enkelt dom kan tilgås via https://domsdatabasen.dk/#sag/\<nummer\>, hvor \<nummer\> er mellem 1 og 3821 (pr. 11-10-2023).
 
@@ -11,7 +11,7 @@ Se `src/scripts/scrape.py`.
 ## Processing af scraped data
 Se `src/scripts/process.py`.
 
-## Finalize data
+## Byg datasæt
 Se `src/scripts/finalize.py`.
 
 ______________________________________________________________________
