@@ -1,6 +1,6 @@
 name: website
 
-# Build the documentation whenever there are new commits on main
+# Build the documentation whenever there are new commits on master
 on:
   push:
     branches:
