@@ -1,4 +1,6 @@
-# Xpaths
+"""XPaths for the scraper module."""
+
+
 XPATHS = {
     "download_pdf": "//*[local-name() = 'svg'][@data-icon = 'download']/*[local-name() = 'path']",
     "Fejlkode 404": "//h1[contains(text(), 'Fejlkode 404')]",
