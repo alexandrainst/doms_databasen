@@ -54,6 +54,8 @@ def test_get_blobs(pdf_text_reader, image_path, n_blobs_expected):
     [
         ("tests/data/processor/underlines_1.png", 11),
         ("tests/data/processor/underlines_2.png", 2),
+        ("tests/data/processor/underlines_3.png", 14),  # Case 96 page 6
+        ("tests/data/processor/underlines_4.png", 36),  # Case 96 page 7
     ],
 )
 def test_line_anonymization_to_boxes(pdf_text_reader, image_path, n_matches_expected):
@@ -368,4 +370,4 @@ def test_get_row_indices_to_split(pdf_text_reader, image_path, rows_to_split_exp
 
 
 if __name__ == "__main__":
-    pytest.main([__file__ + "::test_read_text_from_anonymized_box", "-s"])
+    pytest.main([__file__ + "::test_find_anonymized_boxes", "-s"])
