@@ -16,8 +16,8 @@ Se `src/scripts/finalize.py`.
 
 ______________________________________________________________________
 [![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexandrainst.github.io/doms_databasen/doms_databasen.html)
-[![License](https://img.shields.io/github/license/alexandrainst/doms_databasen)](https://github.com/alexandrainst/doms_databasen/blob/master/LICENSE)
-[![LastCommit](https://img.shields.io/github/last-commit/alexandrainst/doms_databasen)](https://github.com/alexandrainst/doms_databasen/commits/master)
+[![License](https://img.shields.io/github/license/oliverkinch/doms_databasen)](https://github.com/alexandrainst/doms_databasen/blob/master/LICENSE)
+[![LastCommit](https://img.shields.io/github/last-commit/oliverkinch/doms_databasen)](https://github.com/alexandrainst/doms_databasen/commits/master)
 [![Code Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](https://github.com/alexandrainst/doms_databasen/tree/master/tests)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](https://github.com/alexandrainst/doms_databasen/blob/master/CODE_OF_CONDUCT.md)
 
