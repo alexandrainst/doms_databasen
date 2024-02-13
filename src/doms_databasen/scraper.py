@@ -15,10 +15,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
-from .constants import N_FILES_RAW_CASE_DIR
-from .exceptions import PDFDownloadException
-from .utils import save_dict_to_json
-from .xpaths import XPATHS, XPATHS_TABULAR_DATA
+from ._constants import N_FILES_RAW_CASE_DIR
+from ._exceptions import PDFDownloadException
+from ._utils import save_dict_to_json
+from ._xpaths import XPATHS, XPATHS_TABULAR_DATA
 
 logger = logging.getLogger(__name__)
 

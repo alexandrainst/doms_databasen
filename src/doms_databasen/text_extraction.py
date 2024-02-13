@@ -23,7 +23,7 @@ from skimage.filters import rank
 from skimage.measure._regionprops import RegionProperties
 from tika import parser
 
-from src.doms_databasen.constants import (
+from ._constants import (
     BOX_HEIGHT_LOWER_BOUND,
     DPI,
     LENGTH_SIX_LETTERS,
