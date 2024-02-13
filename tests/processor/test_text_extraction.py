@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from src.doms_databasen.text_extraction import PDFTextReader
+from src.doms_databasen._text_extraction import PDFTextReader
 
 
 def read_image(image_path):

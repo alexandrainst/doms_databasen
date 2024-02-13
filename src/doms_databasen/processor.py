@@ -8,7 +8,7 @@ from omegaconf import DictConfig
 
 from ._constants import N_FILES_PROCESSED_CASE_DIR, N_FILES_RAW_CASE_DIR
 from ._utils import load_jsonl, read_json, save_dict_to_json
-from .text_extraction import PDFTextReader
+from ._text_extraction import PDFTextReader
 
 logger = getLogger(__name__)
 
