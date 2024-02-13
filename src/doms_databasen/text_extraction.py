@@ -55,11 +55,14 @@ class PDFTextReader:
     def extract_text(self, pdf_path: Path | str) -> str:
         """Extracts text from a PDF using easyocr or pypdf.
 
-        Some text is anonymized with boxes, and some text is anonymized with underlines.
-        This function tries to find these anonymization, read the anonymized text,
+        Some text is anonymized with boxes, and some text
+        is anonymized with underlines.
+        This function tries to find these anonymization,
+        read the anonymized text,
         and then remove the anonymized text from the image before
         reading the rest of the text with easyocr.
-        If a page has no anonymization or tables, the text is read with pypdf.
+        If a page has no anonymization or tables,
+        the text is read with pypdf.
 
         Args:
             pdf_path (Path | str):
@@ -290,7 +293,7 @@ class PDFTextReader:
         ]
         return anonymized_boxes_underlines_, underlines
 
-    def _get_images(self, pdf_path: Path | str) -> Mapping[np.ndarray]:
+    def _get_images(self, pdf_path: Path | str) -> List[np.ndarray]:
         """Get images from PDF.
 
         Returns all images from PDF, except if debugging a single page.
@@ -316,10 +319,10 @@ class PDFTextReader:
                 ),
             )
         else:
-            images = map(np.array, convert_from_path(pdf_path=pdf_path, dpi=DPI))
+            images = list(map(np.array, convert_from_path(pdf_path=pdf_path, dpi=DPI)))
 
         # Grayscale
-        images = map(lambda image: cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), images)
+        images = list(map(lambda image: cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), images))
         return images
 
     def _find_tables(self, image: np.ndarray, read_tables: bool = False) -> List[dict]:
@@ -909,7 +912,7 @@ class PDFTextReader:
         return area_1 + area_2 - self._intersection(box_1=box_1, box_2=box_2)
 
     @staticmethod
-    def _area(box: dict) -> float:
+    def _area(box: dict) -> int:
         """Calculates the area of a box.
 
         Args:
@@ -917,7 +920,7 @@ class PDFTextReader:
                 Anonymized box with coordinates.
 
         Returns:
-            float:
+            int:
                 Area of the box.
         """
         row_min, col_min, row_max, col_max = box["coordinates"]
@@ -981,7 +984,8 @@ class PDFTextReader:
             y_prev (int):
                 y coordinate of top left corner of previous bounding box.
             max_y_difference (int):
-                Maximum difference between y coordinates of two bounding boxes on the same line.
+                Maximum difference between y coordinates of two
+                bounding boxes on the same line.
 
         Returns:
             bool:
@@ -1730,20 +1734,6 @@ class PDFTextReader:
                 boxes_.append(box)
         return boxes_
 
-    def _area(self, box: dict) -> int:
-        """Calculates the area of a box.
-
-        Args:
-            box (dict):
-                Anonymized box with coordinates.
-
-        Returns:
-            int:
-                Area of the box.
-        """
-        row_min, col_min, row_max, col_max = box["coordinates"]
-        return (row_max - row_min) * (col_max - col_min)
-
     def _inner_box(self, boxes: List[dict], box: dict) -> bool:
         """Determine if box is inside another box.
 
@@ -1844,7 +1834,8 @@ class PDFTextReader:
         scale = self._get_scale(box_length=box_length)
         crop_scaled = self._scale_image(image=crop_refined, scale=scale)
 
-        # Ensure that highest pixel value is 255, else sharpening might not work as expected.
+        # Ensure that highest pixel value is 255, else 
+        # sharpening might not work as expected.
         crop_scaled = np.array(crop_scaled / crop_scaled.max() * 255, dtype=np.uint8)
 
         crop_boundary = self._add_boundary(
@@ -2060,7 +2051,8 @@ class PDFTextReader:
         return blob_image
 
     def _split_blob_to_multiple_boxes(self, blob: RegionProperties) -> List[dict]:
-        """This function is called if a blob is not splitted correctly with initial methods.
+        """This function is called if a blob is not splitted 
+        correctly with initial methods.
 
         Args:
             blob (RegionProperties):
@@ -2462,8 +2454,10 @@ class PDFTextReader:
     ) -> np.ndarray:
         """Removes noise on the boundary of an anonymized box.
 
-        All white pixels in a perfect bounding box should be a pixel of a relevant character.
-        Some images have white pixel defect at the boundary of the bounding box, and
+        All white pixels in a perfect bounding box 
+        should be a pixel of a relevant character.
+        Some images have white pixel defect at the 
+        boundary of the bounding box, and
         this function removes those white pixels.
 
         Args:
@@ -2517,7 +2511,8 @@ class PDFTextReader:
 
         Returns:
             bool:
-                True if blob has too few pixels to be a relevant character. False otherwise.
+                True if blob has too few pixels to 
+                be a relevant character. False otherwise.
         """
         coords = blob.coords
         return (
@@ -2540,7 +2535,8 @@ class PDFTextReader:
 
         Returns:
             bool:
-                True if blob has a low longest distance from the boundary of the image. False otherwise.
+                True if blob has a low longest distance from the 
+                boundary of the image. False otherwise.
         """
         n = min(crop.shape)
         return self._maximum_distance_from_boundary(crop=crop, blob=blob) < n * 0.3
@@ -2550,9 +2546,12 @@ class PDFTextReader:
     ) -> float:
         """Get maximum distance from blob to boundary of image.
 
-        E.g. if the minimum distance from the blob to the top boundary of the image is 5,
-        and the minimum distance from the blob to the bottom boundary of the image is 10,
-        to the left boundary is 3, and to the right boundary is 7, then the maximum distance
+        E.g. if the minimum distance from the blob to 
+        the top boundary of the image is 5,
+        and the minimum distance from the blob to 
+        the bottom boundary of the image is 10,
+        to the left boundary is 3, and to the right 
+        boundary is 7, then the maximum distance
         from the blob to the boundary of the image is 10.
 
         Used in _remove_boundary_noise to determine if a blob is noise or not.
@@ -2838,6 +2837,20 @@ class PDFTextReader:
         except:
             pass
         return text.strip()
+    
+    def _get_text_from_pages(pages: dict) -> str:
+        """Get text from pages.
+
+        Args:
+            pages (dict):
+                Pages with text and extraction method.
+
+        Returns:
+            pdf_text (str):
+                Text from pages.
+        """
+        pdf_text = "\n\n".join(page["text"] for page in pages.values())
+        return pdf_text
 
 
 # This class is not used, but is kept for future reference.
