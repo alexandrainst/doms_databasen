@@ -64,6 +64,20 @@ def main(config: DictConfig) -> None:
 
 
 def _get_text(processed_data: dict, config: DictConfig) -> Tuple[str, str]:
+    """Get `text` and `text_anon` from processed data.
+    
+    Args:
+        processed_data (dict):
+            Processed data for a case.
+        config (DictConfig):
+            Configuration object.
+
+    Returns:
+        text (str):
+            Text extracted from the PDF.
+        text_anon (str):
+            Anonymized text.
+    """
     pdf_data = processed_data["pdf_data"]
     if pdf_data["anonymization_method"] == config.anon_method.none:
         # PDF has no anonymization.
