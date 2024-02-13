@@ -1,3 +1,5 @@
+"""Utility function for the doms_databasen package."""
+
 import json
 from typing import List
 
