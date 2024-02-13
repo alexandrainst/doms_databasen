@@ -35,9 +35,9 @@ def main(config: DictConfig) -> None:
     elif config.process.case_id:
         processor.process(config.process.case_id)
     else:
-        logger.info(config.process.messages.give_correct_inputs)
+        logger.info("Please specify either a 'case_id' or use 'all' to process all cases.")
 
-    logger.info(config.process.messages.done)
+    logger.info("Processing done!")
 
 
 if __name__ == "__main__":

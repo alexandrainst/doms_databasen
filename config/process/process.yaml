@@ -7,16 +7,11 @@ paths:
 force: False
 case_id: "721"
 all: True
-messages:
-  give_correct_input: >
-    Please specify either a 'case_id'
-    or use 'all' to process all cases.
-  done: >
-    Processing done!
-test_case_id: "1"
 start_case_id: "2732"
 
 # Constants
+test_case_id: "1"
+
 page_number: False # Debug a specific page
 
 gpu: False
