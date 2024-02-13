@@ -2838,6 +2838,7 @@ class PDFTextReader:
             pass
         return text.strip()
     
+    @staticmethod
     def _get_text_from_pages(pages: dict) -> str:
         """Get text from pages.
 
