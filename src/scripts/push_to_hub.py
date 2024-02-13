@@ -21,14 +21,14 @@ def main(config: DictConfig) -> None:
 
     # Ensure that there is one sample in the
     # dataset for each processed case
-    assert dataset.num_rows["train"] == _count_folders_in_dir(
+    assert dataset.num_rows["train"] == count_folders_in_dir(
         Path(config.paths.data_processed_dir)
     )
 
     dataset.push_to_hub(config.hf_hub, private=True)
 
 
-def _count_folders_in_dir(dir: Path) -> int:
+def count_folders_in_dir(dir: Path) -> int:
     return len([f for f in dir.iterdir() if f.is_dir()])
 
 
