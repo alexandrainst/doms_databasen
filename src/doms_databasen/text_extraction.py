@@ -322,7 +322,9 @@ class PDFTextReader:
             images = list(map(np.array, convert_from_path(pdf_path=pdf_path, dpi=DPI)))
 
         # Grayscale
-        images = list(map(lambda image: cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), images))
+        images = list(
+            map(lambda image: cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), images)
+        )
         return images
 
     def _find_tables(self, image: np.ndarray, read_tables: bool = False) -> List[dict]:
@@ -1834,7 +1836,7 @@ class PDFTextReader:
         scale = self._get_scale(box_length=box_length)
         crop_scaled = self._scale_image(image=crop_refined, scale=scale)
 
-        # Ensure that highest pixel value is 255, else 
+        # Ensure that highest pixel value is 255, else
         # sharpening might not work as expected.
         crop_scaled = np.array(crop_scaled / crop_scaled.max() * 255, dtype=np.uint8)
 
@@ -2051,7 +2053,7 @@ class PDFTextReader:
         return blob_image
 
     def _split_blob_to_multiple_boxes(self, blob: RegionProperties) -> List[dict]:
-        """This function is called if a blob is not splitted 
+        """This function is called if a blob is not splitted
         correctly with initial methods.
 
         Args:
@@ -2454,9 +2456,9 @@ class PDFTextReader:
     ) -> np.ndarray:
         """Removes noise on the boundary of an anonymized box.
 
-        All white pixels in a perfect bounding box 
+        All white pixels in a perfect bounding box
         should be a pixel of a relevant character.
-        Some images have white pixel defect at the 
+        Some images have white pixel defect at the
         boundary of the bounding box, and
         this function removes those white pixels.
 
@@ -2511,7 +2513,7 @@ class PDFTextReader:
 
         Returns:
             bool:
-                True if blob has too few pixels to 
+                True if blob has too few pixels to
                 be a relevant character. False otherwise.
         """
         coords = blob.coords
@@ -2535,7 +2537,7 @@ class PDFTextReader:
 
         Returns:
             bool:
-                True if blob has a low longest distance from the 
+                True if blob has a low longest distance from the
                 boundary of the image. False otherwise.
         """
         n = min(crop.shape)
@@ -2546,11 +2548,11 @@ class PDFTextReader:
     ) -> float:
         """Get maximum distance from blob to boundary of image.
 
-        E.g. if the minimum distance from the blob to 
+        E.g. if the minimum distance from the blob to
         the top boundary of the image is 5,
-        and the minimum distance from the blob to 
+        and the minimum distance from the blob to
         the bottom boundary of the image is 10,
-        to the left boundary is 3, and to the right 
+        to the left boundary is 3, and to the right
         boundary is 7, then the maximum distance
         from the blob to the boundary of the image is 10.
 
@@ -2837,7 +2839,7 @@ class PDFTextReader:
         except:
             pass
         return text.strip()
-    
+
     @staticmethod
     def _get_text_from_pages(pages: dict) -> str:
         """Get text from pages.

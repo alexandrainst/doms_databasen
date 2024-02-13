@@ -35,7 +35,9 @@ def main(config: DictConfig) -> None:
     elif config.process.case_id:
         processor.process(config.process.case_id)
     else:
-        logger.info("Please specify either a 'case_id' or use 'all' to process all cases.")
+        logger.info(
+            "Please specify either a 'case_id' or use 'all' to process all cases."
+        )
 
     logger.info("Processing done!")
 

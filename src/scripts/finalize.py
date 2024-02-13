@@ -65,7 +65,7 @@ def main(config: DictConfig) -> None:
 
 def _get_text(processed_data: dict, config: DictConfig) -> Tuple[str, str]:
     """Get `text` and `text_anon` from processed data.
-    
+
     Args:
         processed_data (dict):
             Processed data for a case.
