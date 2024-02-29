@@ -1,7 +1,7 @@
 """Utility function for the doms_databasen package."""
 
 import json
-from typing import List
+from typing import Dict, List
 
 import jsonlines
 
@@ -19,7 +19,7 @@ def save_dict_to_json(dict_, file_path) -> None:
         json.dump(dict_, f, indent=4)
 
 
-def read_json(file_path) -> None:
+def read_json(file_path) -> Dict[str, str]:
     """Reads a json file.
 
     Args:
@@ -53,7 +53,6 @@ def append_jsonl(data: dict, file_name: str) -> None:
         file_name (str):
             The name of the JSONL file where the data should be appended.
     """
-
     with jsonlines.open(file_name, mode="a") as writer:
         writer.write(data)
 

@@ -1,0 +1,103 @@
+[tool.poetry]
+name = "doms_databasen"
+description = "Scraper and text processor for domsdatabasen.dk"
+version = "0.0.0"
+authors = [
+    "Oliver Kinch <oliver.kinch@alexandra.dk>",
+]
+readme = "README.md"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+hydra-core = "^1.3.2"
+datasets = "^2.17.1"
+easyocr = "^1.7.1"
+img2table = "^1.2.11"
+jsonlines = "^4.0.0"
+numpy = "^1.26.4"
+omegaconf = "^2.3.0"
+pdf2image = "^1.17.0"
+pypdf = "^4.0.2"
+tika = "^2.6.0"
+scikit-image = "^0.22.0"
+selenium = "^4.18.1"
+tabulate = "^0.9.0"
+webdriver-manager = "^4.0.1"
+opencv-contrib-python = "^4.9.0.80"
+
+[build-system]
+requires = [
+    "poetry-core>=1.0.0"
+]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=7.4.2"
+pytest-xdist = "^3.3.1"
+pytest-cov = "^4.1.0"
+pre-commit = "^3.5.0"
+pdoc = "^14.1.0"
+readme-coverage-badger = ">=0.1.2,<1.0.0"
+click = "^8.1.7"
+
+[[tool.poetry.source]]
+name = "pypi"
+
+[tool.black]
+line-length = 88
+exclude = '''
+/(
+\.git
+| \.hg
+| \.mypy_cache
+| \.tox
+| \.venv
+| _build
+| buck-out
+| build
+)/
+'''
+
+[tool.ruff]
+target-version = "py310"
+extend-select = [
+    "I",
+    "D",
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.ruff.extend-per-file-ignores]
+"__init__.py" = [
+    "F401",
+]
+"src/scripts/your_script.py" = [
+    "I",
+]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    '--verbose',
+    '--durations=10',
+    '--color=yes',
+    '-s',
+    '-vv',
+    '--doctest-modules',
+    '--cov=src/doms_databasen',
+    '-n 2',
+]
+xfail_strict = true
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::ImportWarning",
+]
+log_cli_level = "info"
+testpaths = [
+    "tests",
+    "src/doms_databasen",
+]

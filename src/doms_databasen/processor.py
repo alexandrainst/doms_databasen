@@ -1,14 +1,16 @@
+"""Processor for scraped data from domsdatabasen.dk."""
+
 import os
 import time
 from logging import getLogger
 from pathlib import Path
-from typing import List
+from typing import Dict, List, Union
 
 from omegaconf import DictConfig
 
 from ._constants import N_FILES_PROCESSED_CASE_DIR, N_FILES_RAW_CASE_DIR
-from ._utils import load_jsonl, read_json, save_dict_to_json
 from ._text_extraction import PDFTextReader
+from ._utils import load_jsonl, read_json, save_dict_to_json
 
 logger = getLogger(__name__)
 
@@ -32,6 +34,7 @@ class Processor(PDFTextReader):
     """
 
     def __init__(self, config: DictConfig) -> None:
+        """Initializes the Processor."""
         super().__init__(config=config)
         self.config = config
 
@@ -50,7 +53,7 @@ class Processor(PDFTextReader):
         self.force = self.config.process.force
         self.blacklist = self._read_blacklist()
 
-    def process(self, case_id: str) -> None:
+    def process(self, case_id: str) -> Dict[str, Union[str, Dict[str, str]]]:
         """Processes a single case.
 
         This function takes the raw tabular data and
@@ -59,11 +62,15 @@ class Processor(PDFTextReader):
         Args:
             case_id (str):
                 Case ID
+
+        Returns:
+            processed_data (dict):
+                Processed data (only returned for testing purposes)
         """
         case_id = str(case_id)
         if case_id in self.blacklist:
             logger.info(f"{case_id} is blacklisted.")
-            return
+            return {}
         start = time.time()
         case_id = str(case_id)
 
@@ -73,23 +80,25 @@ class Processor(PDFTextReader):
         # Check if raw data for case ID exists.
         if not self._raw_data_exists(case_dir_raw):
             logger.info(f"Case {case_id} does not exist in raw data directory.")
-            return
+            return {}
 
         # If case has already been processed, skip, unless force=True.
         if self._already_processed(case_dir_processed) and not self.force:
             logger.info(
                 f"Case {case_id} has already been processed. Use --force to overwrite."
             )
-            return
+            return {}
 
         # Process data for the case.
         logger.info(f"Processing case {case_id}...")
 
         case_dir_processed.mkdir(parents=True, exist_ok=True)
 
-        tabular_data = read_json(case_dir_raw / self.config.file_names.tabular_data)
+        tabular_data: Dict[str, str] = read_json(
+            case_dir_raw / self.config.file_names.tabular_data
+        )
 
-        processed_data = {}
+        processed_data: Dict[str, Union[str, Dict[str, str]]] = {}
         processed_data["case_id"] = case_id
         processed_data["tabular_data"] = tabular_data
 
@@ -99,7 +108,7 @@ class Processor(PDFTextReader):
         )
         processed_data["pdf_data"] = pdf_data
         processed_data["process_info"] = {
-            "process_time": time.time() - start,
+            "process_time": str(time.time() - start),
             "hardware_used": "gpu" if self.config.process.gpu else "cpu",
         }
 
@@ -115,7 +124,7 @@ class Processor(PDFTextReader):
         return processed_data
 
     def process_all(self) -> None:
-        """Processes all cases in data/raw"""
+        """Processes all cases in data/raw."""
         logger.info("Processing all cases...")
         case_ids = sorted(
             [
@@ -171,11 +180,11 @@ class Processor(PDFTextReader):
         """
         return case_dir.exists() and len(os.listdir(case_dir)) == N_FILES_RAW_CASE_DIR
 
-    def _read_blacklist(self) -> List[dict]:
+    def _read_blacklist(self) -> List[str]:
         """Reads the blacklised cases.
 
         Returns:
-            list of dict:
+            list of str:
                 List of blacklisted cases.
         """
         data = load_jsonl(self.config.process.paths.blacklist)

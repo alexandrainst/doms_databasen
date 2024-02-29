@@ -1,17 +1,14 @@
-"""Code to read text from PDFs obtained from domsdatabasen.dk"""
+"""Code to read text from PDFs obtained from domsdatabasen.dk."""
 
 import re
 import tempfile
 from logging import getLogger
 from pathlib import Path
-from typing import List, Mapping, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import cv2
 import easyocr
-import fitz
 import numpy as np
-import pypdfium2 as pdfium
-import pytesseract
 import skimage
 from img2table.document import Image as TableImage
 from img2table.tables.objects.extraction import ExtractedTable, TableCell
@@ -35,7 +32,7 @@ logger = getLogger(__name__)
 
 
 class PDFTextReader:
-    """Class for reading text from PDFs obtained from domsdatabasen.dk
+    """Class for reading text from PDFs obtained from domsdatabasen.dk.
 
     Args:
         config (DictConfig):
@@ -49,10 +46,11 @@ class PDFTextReader:
     """
 
     def __init__(self, config: DictConfig):
+        """Initialize PDFTextReader."""
         self.config = config
         self.reader = easyocr.Reader(["da"], gpu=config.process.gpu)
 
-    def extract_text(self, pdf_path: Path | str) -> str:
+    def extract_text(self, pdf_path: Path) -> dict[Any, Any]:
         """Extracts text from a PDF using easyocr or pypdf.
 
         Some text is anonymized with boxes, and some text
@@ -65,7 +63,7 @@ class PDFTextReader:
         the text is read with pypdf.
 
         Args:
-            pdf_path (Path | str):
+            pdf_path (Path):
                 Path to PDF.
 
         Returns:
@@ -76,7 +74,7 @@ class PDFTextReader:
         pdf_reader = PdfReader(pdf_path)
 
         images = self._get_images(pdf_path=pdf_path)
-        pages = {}
+        pages: Dict[str, Dict[str, str]] = {}
 
         # I have not seen a single PDF that uses both methods.
         # Try both methods until it is known which method is used.
@@ -85,7 +83,7 @@ class PDFTextReader:
         underline_anonymization = True
 
         for i, image in enumerate(images):
-            page_num = i + 1
+            page_num = str(i + 1)
             logger.info(f"Reading page {page_num}")
 
             pages[page_num] = {
@@ -167,11 +165,11 @@ class PDFTextReader:
 
     def _pdf_data(
         self,
-        pages: dict,
+        pages: Dict[str, Dict[str, str]],
         box_anonymization: bool,
         underline_anonymization: bool,
         pdf_path: Path,
-    ) -> dict:
+    ) -> dict[str, Union[str, Dict[str, str]]]:
         """Get data about PDF.
 
         Args:
@@ -188,7 +186,7 @@ class PDFTextReader:
             pdf_data (dict):
                 Data about PDF.
         """
-        pdf_data = {}
+        pdf_data: Dict[str, Any] = {}
         anonymization_method = self._anonymization_used(
             box_anonymization=box_anonymization,
             underline_anonymization=underline_anonymization,
@@ -219,7 +217,7 @@ class PDFTextReader:
             return self.config.anon_method.none
         elif box_anonymization:
             return self.config.anon_method.box
-        elif underline_anonymization:
+        else:
             return self.config.anon_method.underline
 
     def _get_main_text_boxes(self, image: np.ndarray) -> List[dict]:
@@ -293,7 +291,7 @@ class PDFTextReader:
         ]
         return anonymized_boxes_underlines_, underlines
 
-    def _get_images(self, pdf_path: Path | str) -> List[np.ndarray]:
+    def _get_images(self, pdf_path: Path) -> List[np.ndarray]:
         """Get images from PDF.
 
         Returns all images from PDF, except if debugging a single page.
@@ -305,18 +303,20 @@ class PDFTextReader:
 
         Returns:
             images (List[np.ndarray]):
-                Map of images from PDF.
+                List of images from PDF.
         """
         if self.config.process.page_number:
             # Used for debugging a single page
-            images = map(
-                np.array,
-                convert_from_path(
-                    pdf_path,
-                    dpi=DPI,
-                    first_page=self.config.process.page_number,
-                    last_page=self.config.process.page_number,
-                ),
+            images = list(
+                map(
+                    np.array,
+                    convert_from_path(
+                        pdf_path,
+                        dpi=DPI,
+                        first_page=self.config.process.page_number,
+                        last_page=self.config.process.page_number,
+                    ),
+                )
             )
         else:
             images = list(map(np.array, convert_from_path(pdf_path=pdf_path, dpi=DPI)))
@@ -335,6 +335,8 @@ class PDFTextReader:
                 Image to find tables in.
                 The tables in the image should have black borders.
                 E.g. the image should not be inverted.
+            read_tables (bool):
+                True if tables should be read. False otherwise.
 
         Returns:
             table_boxes (List[dict]):
@@ -345,7 +347,8 @@ class PDFTextReader:
             table_image = TableImage(src=tmp.name, detect_rotation=False)
             try:
                 tables = table_image.extract_tables()
-            except:
+            except Exception as e:
+                logger.error(f"Error extracting tables: {e}")
                 return []
 
         if not read_tables:
@@ -387,7 +390,7 @@ class PDFTextReader:
 
     def _get_coordinates(
         self, table_or_cell: List[Union[ExtractedTable, TableCell]]
-    ) -> tuple:
+    ) -> Tuple[int, int, int, int]:
         """Get coordinates of table or cell.
 
         Args:
@@ -398,6 +401,8 @@ class PDFTextReader:
             (tuple):
                 Coordinates of table or cell.
         """
+        assert hasattr(table_or_cell, "bbox"), "table_or_cell must have attribute bbox"
+
         row_min, col_min, row_max, col_max = (
             table_or_cell.bbox.y1,
             table_or_cell.bbox.x1,
@@ -552,7 +557,6 @@ class PDFTextReader:
             text (str):
                 Text from subimage of cell.
         """
-
         result = self.reader.readtext(image=crop_refined)
         if not result:
             text = ""
@@ -657,7 +661,6 @@ class PDFTextReader:
             split_indices (List[int]):
                 Row indices to split cell at.
         """
-
         rows, _ = np.where(binary > 0)
         diffs = np.diff(rows)
 
@@ -683,13 +686,17 @@ class PDFTextReader:
         Args:
             binary (np.ndarray):
                 Binary image
+            sort_function (function):
+                Function to sort blobs by.
 
         Returns:
             blobs (list):
                 List of blobs sorted by area of its bounding box.
         """
         if sort_function is None:
-            sort_function = lambda blob: blob.area_bbox
+
+            def sort_function(blob):
+                return blob.area_bbox
 
         labels = measure.label(label_image=binary, connectivity=1)
         blobs = measure.regionprops(label_image=labels)
@@ -721,7 +728,7 @@ class PDFTextReader:
 
         blobs = self._get_blobs(binary=binary, sort_function=self._blob_length)
 
-        anonymized_boxes = []
+        anonymized_boxes: List[dict] = []
         underlines = []
         for blob in blobs:
             if self._blob_length(blob=blob) < self.config.process.underline_length_min:
@@ -758,11 +765,11 @@ class PDFTextReader:
 
         return anonymized_boxes, underlines
 
-    def _extract_underline(self, blob: RegionProperties) -> Union[tuple, bool]:
+    def _extract_underline(self, blob: RegionProperties) -> Tuple:
         """Extract underline from blob.
 
         Blob might be an underline. If it is, then return the underline.
-        Else, return False.
+        Else, return empty tuple.
 
         Args:
             blob (RegionProperties):
@@ -770,9 +777,8 @@ class PDFTextReader:
 
         Returns:
             underline (tuple):
-                Underline with coordinates.
-            False:
-                If underline is not found.
+                Underline with coordinates, empty
+                tuple if blob is not an underline.
         """
         rows, cols = blob.coords.transpose()
         col_min = cols.min()
@@ -785,7 +791,7 @@ class PDFTextReader:
             not len(rows_at_col_min) == len(rows_at_col_max)
             or not (rows_at_col_min == rows_at_col_max).all()
         ):
-            return False
+            return ()
 
         row_min = rows_at_col_min.min()
         row_max = rows_at_col_min.max()
@@ -799,7 +805,7 @@ class PDFTextReader:
                 return True
 
         if not _perfect_rectangle():
-            return False
+            return ()
 
         # Bounds for height of underline.
         lb, ub = (
@@ -808,7 +814,7 @@ class PDFTextReader:
         )
         height = row_max - row_min + 1
         if not lb < height < ub:
-            return False
+            return ()
 
         # +1 becauses box coordinates should be exclusive,
         # e.g. [row_min, row_max)
@@ -826,7 +832,6 @@ class PDFTextReader:
             int:
                 Number of pixels in the bottom row of the blob.
         """
-
         _, cols = blob.coords.transpose()
         col_min = cols.min()
         col_max = cols.max()
@@ -1159,7 +1164,8 @@ class PDFTextReader:
             boxes (List[dict]):
                 List of boxes with coordinates and text
             max_y_difference (int):
-                Maximum difference between y coordinates of two bounding boxes on the same line.
+                Maximum difference between y coordinates of
+                two bounding boxes on the same line.
 
         Returns:
             page_text (str):
@@ -1238,7 +1244,7 @@ class PDFTextReader:
             distance = self._distance_between_lines(line_1=line, line_2=line_prev)
             n_newlines = distance // NEW_LINE_PIXEL_LENGTH or 1
             text_line = self._join_line(line=line)
-            page_text += f"\n" * n_newlines + text_line
+            page_text += "\n" * n_newlines + text_line
         return page_text
 
     def _distance_between_lines(self, line_1: List[dict], line_2: List[dict]) -> int:
@@ -1607,6 +1613,8 @@ class PDFTextReader:
         Args:
             crop (np.ndarray):
                 Crop (representing anonymized box) to be processed.
+            anonymized_box (dict):
+                Anonymized box with coordinates.
 
         Returns:
             bool:
@@ -1621,8 +1629,10 @@ class PDFTextReader:
         """Read text from crop.
 
         Args:
-            crop (np.ndarray):
-                Crop (representing anonymized box) to read text from.
+            crops (List[np.ndarray]):
+                List of crops to read text from.
+            cell (bool):
+                Whether crops are cells or not.
 
         Returns:
             text (str):
@@ -1646,7 +1656,7 @@ class PDFTextReader:
         if not cell:
             if len(boxes) > 1:
                 if not boxes[1]["text"] == "9":
-                    logger.warning(f"Second box is not 9.")
+                    logger.warning("Second box is not 9.")
             box_first = boxes[0]
             text = box_first["text"]
             return text
@@ -1682,7 +1692,7 @@ class PDFTextReader:
                 result_best_score = result_score
         return result_best
 
-    def _result_score(self, result: List[tuple]) -> List[tuple]:
+    def _result_score(self, result: List[tuple]) -> float:
         """Calculates the score of a result.
 
         The score is the average confidence score.
@@ -1815,6 +1825,12 @@ class PDFTextReader:
         Args:
             crop (np.ndarray):
                 Crop (representing the anonymized box) to be processed.
+            binary_threshold (int):
+                Binary threshold to binarize image with.
+            refine_padding (int):
+                Padding to refine box with.
+            cell (bool):
+                Whether crop is a cell or not.
 
         Returns:
             crop_to_read (np.ndarray):
@@ -1872,6 +1888,7 @@ class PDFTextReader:
             float:
                 Scale to scale box/crop with.
         """
+        scale: float
         if box_length > LENGTH_SIX_LETTERS:
             scale = 1
             return scale
@@ -1901,17 +1918,23 @@ class PDFTextReader:
         self,
         crop: np.ndarray,
         binary_threshold: int,
-        box: dict = None,
+        box: dict = {},
         padding: int = 0,
         cell: bool = False,
     ) -> tuple:
         """Refine crop.
 
         Args:
-            box (dict):
-                Anonymized/cell box with coordinates.
             crop (np.ndarray):
                 Crop of image representing the box.
+            binary_threshold (int):
+                Binary threshold to binarize image with.
+            box (dict):
+                Anonymized/cell box with coordinates.
+            padding (int):
+                Padding to refine box with.
+            cell (bool):
+                Whether crop is a cell or not.
 
         Returns:
             box_refined (dict):
@@ -1954,7 +1977,7 @@ class PDFTextReader:
         row_last_ = min(row_last + 1 + p, n)
         col_last_ = min(col_last + 1 + p, m)
         crop_refined = crop[row_first_:row_last_, col_first_:col_last_]
-        if box is None:
+        if not box:
             return crop_refined, None
 
         # Padding here could make the box coordinates go out of bounds.
@@ -1981,7 +2004,6 @@ class PDFTextReader:
             List[dict]:
                 List of anonymized boxes.
         """
-
         # Mean filter to make text outside boxes
         # brigther than color of boxes.
         footprint = np.ones((5, 5))
@@ -2004,14 +2026,15 @@ class PDFTextReader:
             binary=inverted_boxes_split
         )
 
-        sort_function = lambda blob: blob.area
+        def sort_function(blob):
+            return blob.area
+
         blobs = self._get_blobs(
             binary=inverted_boxes_split_2, sort_function=sort_function
         )
 
         anonymized_boxes = []
         for blob in blobs:
-
             if blob.area < self.config.process.box_area_min:
                 # Blob is too small to be considered an anonymized box.
                 break
@@ -2053,7 +2076,9 @@ class PDFTextReader:
         return blob_image
 
     def _split_blob_to_multiple_boxes(self, blob: RegionProperties) -> List[dict]:
-        """This function is called if a blob is not splitted
+        """Split blob of multiple boxes.
+
+        This function is called if a blob is not splitted
         correctly with initial methods.
 
         Args:
@@ -2127,7 +2152,7 @@ class PDFTextReader:
             opening = cv2.morphologyEx(closed, cv2.MORPH_OPEN, np.ones((15, 1)))
 
             booled = np.any(opening, axis=0)
-            empty_cols = np.where(booled == False)[0]
+            empty_cols = np.where(booled is False)[0]
             if len(empty_cols) == 0:
                 continue
 
@@ -2223,7 +2248,7 @@ class PDFTextReader:
         )
 
     def _split_boxes_in_image(self, inverted: np.ndarray) -> np.ndarray:
-        """Splits overlapping boxes in image
+        """Splits overlapping boxes in image.
 
         Some boxes are overlapping horizontally.
         This function splits them into separate boxes.
@@ -2303,7 +2328,9 @@ class PDFTextReader:
         if not edge_lengths:
             return []
 
-        rows_to_split = sorted(edge_lengths, key=edge_lengths.get, reverse=True)
+        rows_to_split = sorted(
+            edge_lengths, key=lambda k: edge_lengths[k], reverse=True
+        )
         rows_to_split = [
             row
             for row in rows_to_split
@@ -2444,7 +2471,6 @@ class PDFTextReader:
             np.ndarray:
                 Binarized image.
         """
-
         t = threshold
         binary = image.copy()
         binary[binary < t] = val_min
@@ -2463,14 +2489,15 @@ class PDFTextReader:
         this function removes those white pixels.
 
         Args:
-            binary_crop (np.ndarray):
-                Cropped image showing the anonymized box.
+            crop (np.ndarray):
+                Image of anonymized box.
+            binary_threshold (int):
+                Binary threshold to binarize image with.
 
         Returns:
             np.ndarray:
                 Cropped image (anonymized box) with boundary noise removed.
         """
-
         binary_crop = self._binarize(
             image=crop,
             threshold=binary_threshold,
@@ -2711,7 +2738,6 @@ class PDFTextReader:
 
             # Get box in between first and last box
             if len(split_indices) > 1:
-
                 for split_index_1, split_index_2 in zip(
                     split_indices[:-1], split_indices[1:]
                 ):
@@ -2801,11 +2827,14 @@ class PDFTextReader:
     def _add_boundary(image: np.ndarray, padding: int = 1) -> np.ndarray:
         """Add boundary to image.
 
-        EasyOCR seems to give the best results when the text is surrounded by black pixels.
+        EasyOCR seems to give the best results when the text is
+        surrounded by black pixels.
 
         Args:
             image (np.ndarray):
                 Image to add boundary to.
+            padding (int):
+                Padding to add to boundary.
 
         Returns:
             np.ndarray:
@@ -2836,8 +2865,8 @@ class PDFTextReader:
             result = parser.from_file(pdf_path, requestOptions=request_options)
             if result["status"] == 200:
                 text = result["content"]
-        except:
-            pass
+        except Exception as e:
+            logger.error(f"Error reading text with tika: {e}")
         return text.strip()
 
     @staticmethod
@@ -2854,71 +2883,6 @@ class PDFTextReader:
         """
         pdf_text = "\n\n".join(page["text"] for page in pages.values())
         return pdf_text
-
-
-# This class is not used, but is kept for future reference.
-class PDFTextExtractor:
-    @staticmethod
-    def tika(pdf_path: str):
-        request_options = {"timeout": 300}
-        text = ""
-        result = parser.from_file(pdf_path, requestOptions=request_options)
-        if result["status"] == 200:
-            text = result["content"]
-        return text.strip()
-
-    @staticmethod
-    def pypdf(pdf_path: str, page_num: int = None):
-        reader = PdfReader(pdf_path)
-
-        if page_num is not None:
-            page = reader.pages[page_num]
-            return page.extract_text()
-
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text() + "\n\n"
-        return text.strip()
-
-    @staticmethod
-    def pypdfium2(pdf_path: str):
-        pdf = pdfium.PdfDocument(pdf_path)
-
-        text = ""
-        for page in pdf:
-            text_page = page.get_textpage()
-            text += text_page.get_text_range() + "\n\n"
-        return text.strip()
-
-    @staticmethod
-    def pymupdf(pdf_path: str):
-        with fitz.open(pdf_path) as doc:
-            text = ""
-            for page in doc:
-                text += page.get_text() + "\n\n"
-        return text.strip()
-
-    @staticmethod
-    def easyocr(
-        image: np.ndarray,
-        gpu: bool,
-        reader: easyocr.Reader = None,
-        languages: List[str] = ["da"],
-    ):
-        if reader is None:
-            reader = easyocr.Reader([languages], gpu=gpu)
-        result = reader.readtext(image)
-        # Result should then be sorted w.r.t how the text is read.
-
-    @staticmethod
-    def tesseract(pdf_path: str, first_page_only: bool = False):
-        images = convert_from_path(pdf_path)
-        text = ""
-        for image in images:
-            text += pytesseract.image_to_string(image, lang="dan") + "\n\n"
-            if first_page_only:
-                return text.strip()
-        return text.strip()
 
 
 def save_cv2_image_tmp(image):
