@@ -6,7 +6,6 @@ on:
       - master
 
 jobs:
-
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -19,7 +18,7 @@ jobs:
             os: [ubuntu-latest]
             python-version: ["3.11"]
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -35,7 +34,7 @@ jobs:
       - name: Install Dependencies
         run: |
           poetry env use "${{ matrix.python-version }}"
-          poetry install --extras all
+          poetry install
 
       - name: Test with pytest
         run: make test
