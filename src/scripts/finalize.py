@@ -1,4 +1,6 @@
-"""This scripts finalizes the data by merging all the processed data into a single dataset.
+"""Finalize dataset.
+
+This scripts finalizes the data by merging all the processed data into a single dataset.
 
 Usage:
     >>> python src/scripts/finalize.py
@@ -14,22 +16,28 @@ from pathlib import Path
 from typing import Tuple
 
 import hydra
+from doms_databasen._utils import append_jsonl, init_jsonl, read_json
 from omegaconf import DictConfig
-
-from src.doms_databasen._utils import append_jsonl, init_jsonl, read_json
 
 logger = getLogger(__name__)
 
 
 @hydra.main(config_path="../../config", config_name="config")
 def main(config: DictConfig) -> None:
+    """Finalize dataset.
+
+    Args:
+        config (DictConfig):
+            Hydra config object.
+    """
     data_processed_dir = Path(config.paths.data_processed_dir)
     data_final_dir = Path(config.paths.data_final_dir)
     dataset_path = data_final_dir / config.file_names.dataset
 
     if dataset_path.exists() and not config.finalize.force:
         logger.info(
-            f"Dataset already exists at {dataset_path}. Use 'finalize.force=True' to overwrite."
+            f"Dataset already exists at {dataset_path}."
+            "Use 'finalize.force=True' to overwrite."
         )
         return
 
