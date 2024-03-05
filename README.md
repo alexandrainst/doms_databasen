@@ -5,6 +5,8 @@ Scraping og processering af [domsdatabasen](https://domsdatabasen.dk/#).
 
 Hver enkelt dom kan tilgås via https://domsdatabasen.dk/#sag/\<nummer\>, hvor \<nummer\> er mellem 1 og 3821 (pr. 11-10-2023).
 
+Datasættet ligger i en processeret udgave på [Huggingface](https://huggingface.co/datasets/oliverkinch/domsdatabasen).
+
 ## Scraping af sager
 Se `src/scripts/scrape.py`.
 
