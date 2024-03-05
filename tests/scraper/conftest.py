@@ -3,9 +3,8 @@
 import shutil
 
 import pytest
+from doms_databasen.scraper import DomsDatabasenScraper
 from hydra import compose, initialize
-
-from src.doms_databasen.scraper import DomsDatabasenScraper
 
 # Initialise Hydra
 initialize(config_path="../../config", version_base=None)

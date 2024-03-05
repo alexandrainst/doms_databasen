@@ -3,12 +3,12 @@
 import cv2
 import numpy as np
 import pytest
+from doms_databasen._text_extraction import PDFTextReader
 from PIL import Image
-
-from src.doms_databasen._text_extraction import PDFTextReader
 
 
 def read_image(image_path):
+    """Read an image and convert it to grayscale if it is not already."""
     image = np.array(Image.open(image_path))
     if len(image.shape) == 3:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -17,6 +17,7 @@ def read_image(image_path):
 
 @pytest.fixture(scope="module")
 def pdf_text_reader(config):
+    """Return a PDFTextReader instance."""
     return PDFTextReader(config=config)
 
 
@@ -29,11 +30,13 @@ def pdf_text_reader(config):
         ),
         (
             "tests/data/processor/underlines.pdf",
-            "Noget tekst hvor ord som er <anonym>understreget</anonym>\nvil blive anonymiseret",
+            "Noget tekst hvor ord som er <anonym>understreget</anonym>\n"
+            "vil blive anonymiseret",
         ),
     ],
 )
 def test_extract_text(pdf_text_reader, pdf_path, expected_text):
+    """Test that text is extracted from a PDF."""
     pdf_data = pdf_text_reader.extract_text(pdf_path=pdf_path)
     text = pdf_text_reader._get_text_from_pages(pdf_data["pages"])
     assert text == expected_text
@@ -44,6 +47,7 @@ def test_extract_text(pdf_text_reader, pdf_path, expected_text):
     [("tests/data/processor/blobs.png", 4)],
 )
 def test_get_blobs(pdf_text_reader, image_path, n_blobs_expected):
+    """Test that blobs are found in an image."""
     binary_image = read_image(image_path)
     blobs = pdf_text_reader._get_blobs(binary_image)
     assert len(blobs) == n_blobs_expected
@@ -59,6 +63,7 @@ def test_get_blobs(pdf_text_reader, image_path, n_blobs_expected):
     ],
 )
 def test_line_anonymization_to_boxes(pdf_text_reader, image_path, n_matches_expected):
+    """Test that underlines are found in an image."""
     image = read_image(image_path)
     anonymized_boxes, underlines = pdf_text_reader._line_anonymization_to_boxes(image)
     assert len(anonymized_boxes) == n_matches_expected
@@ -76,6 +81,7 @@ def test_line_anonymization_to_boxes(pdf_text_reader, image_path, n_matches_expe
     ],
 )
 def test_process_image(pdf_text_reader, image_path, anonymized_boxes, underlines):
+    """Test that an image is processed."""
     image = read_image(image_path)
     processed_image = pdf_text_reader._process_image(
         image=image,
@@ -105,6 +111,7 @@ def test_process_image(pdf_text_reader, image_path, anonymized_boxes, underlines
     ],
 )
 def test_get_text_from_boxes(pdf_text_reader, boxes, text_expected):
+    """Test that text is extracted from boxes."""
     text = pdf_text_reader._get_text_from_boxes(boxes)
     assert text == text_expected
 
@@ -201,6 +208,7 @@ def test_get_text_from_boxes(pdf_text_reader, boxes, text_expected):
 def test_read_text_from_anonymized_box(
     pdf_text_reader, image_path, anonymized_box, invert, text_expected
 ):
+    """Test that text is read from an anonymized box."""
     image = read_image(image_path)
     anonymized_box = pdf_text_reader._read_text_from_anonymized_box(
         image=image, anonymized_box=anonymized_box, invert=invert
@@ -227,6 +235,7 @@ def test_read_text_from_anonymized_box(
     ],
 )
 def test_find_anonymized_boxes(pdf_text_reader, image_path, n_matches_expected):
+    """Test that anonymized boxes are found in an image."""
     image = read_image(image_path)
     anonymized_boxes = pdf_text_reader._find_anonymized_boxes(image=image)
     assert len(anonymized_boxes) == n_matches_expected
@@ -240,6 +249,7 @@ def test_find_anonymized_boxes(pdf_text_reader, image_path, n_matches_expected):
     ],
 )
 def test_remove_boundary_noise(pdf_text_reader, config, image_path, binary_threshold):
+    """Test that boundary noise is removed from an image."""
     image = read_image(image_path)
     N, M = image.shape
     image_clean = pdf_text_reader._remove_boundary_noise(image.copy(), binary_threshold)
@@ -267,6 +277,7 @@ def test_remove_boundary_noise(pdf_text_reader, config, image_path, binary_thres
     ],
 )
 def test_get_split_indices(pdf_text_reader, image_path, n_splits_expected):
+    """Test that split indices are found in an image."""
     image = read_image(image_path)
     split = pdf_text_reader._get_split_indices(crop=image)
     assert len(split) == n_splits_expected
@@ -284,6 +295,7 @@ def test_get_split_indices(pdf_text_reader, image_path, n_splits_expected):
 def test_no_boxes_with_too_much_overlap(
     pdf_text_reader, image_path, n_duplicates_expected
 ):
+    """Test that boxes with too much overlap are not found in an image."""
     image = read_image(image_path)
     (
         boxes,
@@ -302,6 +314,7 @@ def test_no_boxes_with_too_much_overlap(
     ],
 )
 def test_remove_logo(pdf_text_reader, image_path, difference_flag_expected):
+    """Test that a logo is removed from an image."""
     image = read_image(image_path)
     image_without_logo = pdf_text_reader._remove_logo(image=image.copy())
     difference_flag = np.abs(image_without_logo - image).sum() > 0
@@ -343,6 +356,7 @@ def test_find_tables(
     invert,
     shape_expected,
 ):
+    """Test that tables are found in an image."""
     image = read_image(image_path)
     if invert:
         image = cv2.bitwise_not(image)
@@ -364,6 +378,7 @@ def test_find_tables(
     ],
 )
 def test_get_row_indices_to_split(pdf_text_reader, image_path, rows_to_split_expected):
+    """Test that rows to split are found in an image."""
     image = read_image(image_path)
     rows_to_split = pdf_text_reader._get_row_indices_to_split(blob_image=image)
     assert rows_to_split == rows_to_split_expected
