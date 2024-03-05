@@ -148,16 +148,9 @@ view-docs:  ## View documentation
 		esac; \
 		"$${openCmd}" docs/doms_databasen.html
 
-# test:  ## Run tests
-# 	@poetry run pytest && poetry run readme-cov
-
 test:
-	@poetry run pytest tests/scraper && \
-	poetry run pytest tests/processor && \
-	# run readme-cov
-	poetry run pytest --cov=src --cov-report=html
-
-	
+	@poetry run pytest tests/scraper ; \
+	poetry run pytest tests/processor ; \
 
 docker:  ## Build Docker image and run container
 	@docker build -t doms_databasen .
@@ -165,13 +158,4 @@ docker:  ## Build Docker image and run container
 
 tree:  ## Print directory tree
 	@tree -a --gitignore -I .git .
-
-
-
-test:
-	pytest tests/scraper && \
-	pytest tests/processor
-format:
-	isort .
-	black .
 	
