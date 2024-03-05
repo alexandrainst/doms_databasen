@@ -33,7 +33,7 @@ def pytest_sessionstart(session):
     )
     scraper = DomsDatabasenScraper(config=config)
     case_id = str(config.scrape.test_case_id)
-    scraper.scrape(case_id)
+    scraper.scrape(case_id=case_id)
 
     session.__CACHE = scraper.test_dir
 

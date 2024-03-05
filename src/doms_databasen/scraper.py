@@ -234,11 +234,6 @@ class DomsDatabasenScraper:
         download_element.click()
         file_name = self._wait_download(files_before=files_before_download)
         if file_name:
-            # print cwd
-            print("cwd", os.getcwd())
-            # list dir
-            print("listdir", os.listdir())
-
             from_ = self.download_dir / file_name
             to_ = case_dir / self.config.file_names.pdf_document
             shutil.move(from_, to_)
@@ -313,10 +308,8 @@ class DomsDatabasenScraper:
             logger.error(e)
             raise e
 
-    # # When closing the scraper, the webdriver should be closed.
-    # # and the download folder should be deleted.
-    # def __del__(self):
-    #     """Closes the scraper."""
-    #     self.driver.quit()
-    #     shutil.rmtree(self.download_dir)
-    #     logger.info("Scraper closed")
+    def __del__(self):
+        """Closes the scraper."""
+        self.driver.quit()
+        shutil.rmtree(self.download_dir)
+        logger.info("Scraper closed")
