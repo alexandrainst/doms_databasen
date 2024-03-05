@@ -1,4 +1,4 @@
-"""Scraper for domsdatabasen.dk"""
+"""Scraper for domsdatabasen.dk."""
 
 import logging
 import os
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 class DomsDatabasenScraper:
-    """Scraper for domsdatabasen.dk
+    """Scraper for domsdatabasen.dk.
 
     Args:
         config (DictConfig):
@@ -48,6 +48,7 @@ class DomsDatabasenScraper:
     """
 
     def __init__(self, config) -> None:
+        """Initializes the Scraper."""
         self.config = config
         self.test_dir = Path(self.config.scrape.paths.test_dir)
         self.download_dir = (
@@ -66,17 +67,12 @@ class DomsDatabasenScraper:
         self._intialize_downloader_folder()
         self.driver = self._start_driver()
 
-    def scrape(self, case_id: str) -> bool:
-        """Scrapes a single case from domsdatabasen.dk
+    def scrape(self, case_id: str) -> None:
+        """Scrapes a single case from domsdatabasen.dk.
 
         Args:
             case_id (str):
                 Case ID
-
-        Returns:
-            bool:
-                The return value is used in `self.scrape_all`, to determine
-                if the scraping should continue to the next case or stop.
         """
         case_id = str(case_id)
         case_dir = (
@@ -125,7 +121,7 @@ class DomsDatabasenScraper:
         save_dict_to_json(tabular_data, case_dir / self.config.file_names.tabular_data)
 
     def scrape_all(self) -> None:
-        """Scrapes all cases from domsdatabasen.dk
+        """Scrapes all cases from domsdatabasen.dk.
 
         The highest case ID is unknown, and there are IDs between 1 and
         the highest case ID that do not exist. Thus, the scraper starts
@@ -138,7 +134,8 @@ class DomsDatabasenScraper:
             else int(self.config.scrape.start_case_id)
         )
         logger.info(
-            "Scraping all cases starting at case ID {case_id}. Change 'scrape.start_case_id' to None to start at 1"
+            "Scraping all cases starting at case ID {case_id}. "
+            "Change 'scrape.start_case_id' to None to start at 1"
         )
 
         while (
