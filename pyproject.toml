@@ -85,8 +85,6 @@ addopts = [
     '-s',
     '-vv',
     '--doctest-modules',
-    '--cov=src/doms_databasen',
-    '-n 2',
 ]
 xfail_strict = true
 filterwarnings = [
