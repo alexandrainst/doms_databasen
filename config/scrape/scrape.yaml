@@ -20,3 +20,4 @@ test_case_id: "1"
 # Constants
 sleep: 5
 max_consecutive_nonexistent_page_count: 100
+timeout_pdf_download: 20

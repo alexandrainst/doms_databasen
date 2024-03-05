@@ -197,7 +197,7 @@ class DomsDatabasenScraper:
         """
         return case_dir.exists() and len(os.listdir(case_dir)) == N_FILES_RAW_CASE_DIR
 
-    def _wait_download(self, files_before: set, timeout: int = 10) -> str:
+    def _wait_download(self, files_before: set) -> str:
         """Waits for a file to be downloaded to the download directory.
 
         Args:
@@ -211,7 +211,7 @@ class DomsDatabasenScraper:
                 Name of downloaded file (empty string if timeout)
         """
         time.sleep(1)
-        endtime = time.time() + timeout
+        endtime = time.time() + self.config.scrape.timeout_pdf_download
         while True:
             files_now = set(os.listdir(self.download_dir))
             new_files = files_now - files_before
