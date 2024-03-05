@@ -35,6 +35,10 @@ jobs:
         run: |
           poetry env use "${{ matrix.python-version }}"
           poetry install --all-extras
+          
+          # Install poppler-utils
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
 
       - name: Test with pytest
         run: poetry run make test
