@@ -25,7 +25,7 @@ def main(config: DictConfig) -> None:
         Path(config.paths.data_processed_dir)
     )
 
-    dataset.push_to_hub(config.hf_hub, private=True)
+    dataset.push_to_hub(config.paths.hf_hub, private=True)
 
 
 def count_folders_in_dir(dir: Path) -> int:

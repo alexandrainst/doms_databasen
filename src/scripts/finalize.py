@@ -16,7 +16,7 @@ from typing import Tuple
 import hydra
 from omegaconf import DictConfig
 
-from src.doms_databasen.utils import append_jsonl, init_jsonl, read_json
+from src.doms_databasen._utils import append_jsonl, init_jsonl, read_json
 
 logger = getLogger(__name__)
 
@@ -49,7 +49,7 @@ def main(config: DictConfig) -> None:
         processed_data = read_json(path / config.file_names.processed_data)
         final_data = {}
         final_data["case_id"] = processed_data["case_id"]
-        final_data["tabular_data"] = processed_data["tabular_data"]
+        final_data.update(processed_data["tabular_data"])
 
         text, text_anon = _get_text(processed_data=processed_data, config=config)
         final_data["text"] = text
