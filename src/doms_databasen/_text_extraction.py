@@ -2152,7 +2152,7 @@ class PDFTextReader:
             opening = cv2.morphologyEx(closed, cv2.MORPH_OPEN, np.ones((15, 1)))
 
             booled = np.any(opening, axis=0)
-            empty_cols = np.where(booled is False)[0]
+            empty_cols = np.where(np.logical_not(booled))[0]
             if len(empty_cols) == 0:
                 continue
 
