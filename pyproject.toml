@@ -24,6 +24,7 @@ scikit-image = "^0.22.0"
 selenium = "^4.18.1"
 tabulate = "^0.9.0"
 webdriver-manager = "^4.0.1"
+poppler-utils = "*"
 
 [build-system]
 requires = [
