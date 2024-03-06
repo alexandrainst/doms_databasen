@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 import shutil
 import time
 from pathlib import Path
@@ -255,7 +256,26 @@ class DomsDatabasenScraper:
             element = self.driver.find_element(By.XPATH, xpath)
             tabular_data[key] = element.text.strip()
 
+        # Not part of the tabular data table, but
+        # we will include the date of the case here.
+        tabular_data["Dato"] = self._get_date()
+
         return tabular_data
+
+    def _get_date(self) -> str:
+        """Gets the date of the case.
+
+        Returns:
+            date (str):
+                Date of the case
+        """
+        date = ""
+        element = self.driver.find_element(By.XPATH, XPATHS["Dato"])
+        # Datetime is on format "dd-mm-yyyy"
+        found = re.search(r"\d{2}-\d{2}-\d{4}", element.text.strip())
+        if found:
+            date = found.group()
+        return date
 
     def _accept_cookies(self) -> None:
         """Accepts cookies on the page."""

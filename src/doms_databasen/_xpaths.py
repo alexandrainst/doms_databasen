@@ -7,6 +7,7 @@ XPATHS = {
     "Accept cookies": "//a[@id='CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll']",
     "Øvrige sagsoplysninger": "//span[@class='accordion-title'][contains(text(), 'Øvrige sagsoplysninger')]",
     "Sagen er ikke tilgængelig": "//h1[contains(text(), 'Sagen er ikke tilgængelig')]",
+    "Dato": "//tr[@tabindex='0']//td[1]",
 }
 XPATHS_TABULAR_DATA = {
     "Overskrift": "//h4[contains(text(), 'Overskrift')]/following-sibling::span[1]/p",

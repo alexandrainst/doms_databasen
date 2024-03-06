@@ -65,6 +65,9 @@ extend-select = [
     "I",
     "D",
 ]
+exclude = [
+    "src/doms_databasen/_xpaths.py",
+]
 
 [tool.ruff.pydocstyle]
 convention = "google"
