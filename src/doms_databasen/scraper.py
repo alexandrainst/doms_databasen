@@ -7,6 +7,7 @@ import shutil
 import time
 from pathlib import Path
 
+from omegaconf import DictConfig
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
@@ -48,7 +49,7 @@ class Scraper:
             Chrome webdriver
     """
 
-    def __init__(self, config) -> None:
+    def __init__(self, config: DictConfig) -> None:
         """Initializes the Scraper."""
         self.config = config
         self.test_dir = Path(self.config.scrape.paths.test_dir)
