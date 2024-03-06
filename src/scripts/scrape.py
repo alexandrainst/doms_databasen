@@ -17,7 +17,7 @@ Examples usages:
 import logging
 
 import hydra
-from doms_databasen.scraper import DomsDatabasenScraper
+from doms_databasen.scraper import Scraper
 from omegaconf import DictConfig
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ def main(config: DictConfig) -> None:
             Hydra config object.
 
     """
-    scraper = DomsDatabasenScraper(config=config)
+    scraper = Scraper(config=config)
     if config.scrape.all:
         scraper.scrape_all()
     elif config.scrape.case_id:

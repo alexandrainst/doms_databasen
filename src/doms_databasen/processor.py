@@ -167,7 +167,7 @@ class Processor(PDFTextReader):
         If a case has been scraped successfully, then the case directory exists
         and contains two files: the PDF document and the tabular data.
 
-        Same code as the method `_already_scraped` from class `DomsDatabasenScraper`
+        Same code as the method `_already_scraped` from class `Scraper`
         (src/doms_databasen/scraper.py).
 
         Args:

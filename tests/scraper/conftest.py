@@ -3,7 +3,7 @@
 import shutil
 
 import pytest
-from doms_databasen.scraper import DomsDatabasenScraper
+from doms_databasen.scraper import Scraper
 from hydra import compose, initialize
 
 # Initialise Hydra
@@ -21,8 +21,8 @@ def config():
 
 @pytest.fixture(scope="session")
 def scraper(config):
-    """Return a DomsDatabasenScraper instance."""
-    return DomsDatabasenScraper(config=config)
+    """Return a Scraper instance."""
+    return Scraper(config=config)
 
 
 def pytest_sessionstart(session):
@@ -31,7 +31,7 @@ def pytest_sessionstart(session):
         config_name="config",
         overrides=["testing=True"],
     )
-    scraper = DomsDatabasenScraper(config=config)
+    scraper = Scraper(config=config)
     case_id = str(config.scrape.test_case_id)
     scraper.scrape(case_id=case_id)
 

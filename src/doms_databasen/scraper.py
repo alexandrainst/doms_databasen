@@ -24,7 +24,7 @@ from ._xpaths import XPATHS, XPATHS_TABULAR_DATA
 logger = logging.getLogger(__name__)
 
 
-class DomsDatabasenScraper:
+class Scraper:
     """Scraper for domsdatabasen.dk.
 
     Args:
