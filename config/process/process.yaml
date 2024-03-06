@@ -5,8 +5,8 @@ paths:
 
 # Arguments
 force: False
-case_id: "721"
-all: True
+case_id: "1"
+all: False
 start_case_id: "2732"
 
 # Constants

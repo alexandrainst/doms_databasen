@@ -1,4 +1,4 @@
-"""Scraper for domsdatabasen.dk"""
+"""Scraper for domsdatabasen.dk."""
 
 import logging
 import os
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 class DomsDatabasenScraper:
-    """Scraper for domsdatabasen.dk
+    """Scraper for domsdatabasen.dk.
 
     Args:
         config (DictConfig):
@@ -48,13 +48,10 @@ class DomsDatabasenScraper:
     """
 
     def __init__(self, config) -> None:
+        """Initializes the Scraper."""
         self.config = config
         self.test_dir = Path(self.config.scrape.paths.test_dir)
-        self.download_dir = (
-            Path(self.config.scrape.paths.download_dir)
-            if not self.config.testing
-            else self.test_dir
-        )
+        self.download_dir = Path(self.config.scrape.paths.download_dir)
         self.data_raw_dir = Path(self.config.paths.data_raw_dir)
 
         self.force = self.config.scrape.force
@@ -66,23 +63,18 @@ class DomsDatabasenScraper:
         self._intialize_downloader_folder()
         self.driver = self._start_driver()
 
-    def scrape(self, case_id: str) -> bool:
-        """Scrapes a single case from domsdatabasen.dk
+    def scrape(self, case_id: str) -> None:
+        """Scrapes a single case from domsdatabasen.dk.
 
         Args:
             case_id (str):
                 Case ID
-
-        Returns:
-            bool:
-                The return value is used in `self.scrape_all`, to determine
-                if the scraping should continue to the next case or stop.
         """
         case_id = str(case_id)
         case_dir = (
             self.data_raw_dir / case_id
             if not self.config.testing
-            else self.test_dir / self.config.scrape.test_case_name
+            else self.test_dir / case_id
         )
 
         if self._already_scraped(case_dir) and not self.force:
@@ -125,7 +117,7 @@ class DomsDatabasenScraper:
         save_dict_to_json(tabular_data, case_dir / self.config.file_names.tabular_data)
 
     def scrape_all(self) -> None:
-        """Scrapes all cases from domsdatabasen.dk
+        """Scrapes all cases from domsdatabasen.dk.
 
         The highest case ID is unknown, and there are IDs between 1 and
         the highest case ID that do not exist. Thus, the scraper starts
@@ -138,7 +130,8 @@ class DomsDatabasenScraper:
             else int(self.config.scrape.start_case_id)
         )
         logger.info(
-            "Scraping all cases starting at case ID {case_id}. Change 'scrape.start_case_id' to None to start at 1"
+            "Scraping all cases starting at case ID {case_id}. "
+            "Change 'scrape.start_case_id' to None to start at 1"
         )
 
         while (
@@ -200,7 +193,7 @@ class DomsDatabasenScraper:
         """
         return case_dir.exists() and len(os.listdir(case_dir)) == N_FILES_RAW_CASE_DIR
 
-    def _wait_download(self, files_before: set, timeout: int = 10) -> str:
+    def _wait_download(self, files_before: set) -> str:
         """Waits for a file to be downloaded to the download directory.
 
         Args:
@@ -214,7 +207,7 @@ class DomsDatabasenScraper:
                 Name of downloaded file (empty string if timeout)
         """
         time.sleep(1)
-        endtime = time.time() + timeout
+        endtime = time.time() + self.config.scrape.timeout_pdf_download
         while True:
             files_now = set(os.listdir(self.download_dir))
             new_files = files_now - files_before
@@ -239,13 +232,9 @@ class DomsDatabasenScraper:
         )
 
         download_element.click()
-        file_name = self._wait_download(files_before_download)
+        file_name = self._wait_download(files_before=files_before_download)
         if file_name:
-            from_ = (
-                self.download_dir / file_name
-                if not self.config.testing
-                else self.test_dir / file_name
-            )
+            from_ = self.download_dir / file_name
             to_ = case_dir / self.config.file_names.pdf_document
             shutil.move(from_, to_)
         else:
@@ -318,3 +307,9 @@ class DomsDatabasenScraper:
         except Exception as e:
             logger.error(e)
             raise e
+
+    def __del__(self):
+        """Closes the scraper."""
+        self.driver.quit()
+        shutil.rmtree(self.download_dir)
+        logger.info("Scraper closed")

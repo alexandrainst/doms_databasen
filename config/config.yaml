@@ -12,10 +12,10 @@ domsdatabasen:
   url: https://domsdatabasen.dk/#sag
 
 paths:
-  hf_hub: oliverkinch/domsdatabasen
+  hf_hub: alexandrainst/domsdatabasen
   data_raw_dir: data/raw/
-  data_processed_dir: /mnt/data_6tb/oliver/doms_databasen/data/processed
-  data_final_dir: /mnt/data_6tb/oliver/doms_databasen/data/final
+  data_processed_dir: data/processed
+  data_final_dir: data/final
 
 file_names:
   tabular_data: tabular_data.json

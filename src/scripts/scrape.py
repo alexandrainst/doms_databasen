@@ -17,18 +17,21 @@ Examples usages:
 import logging
 
 import hydra
+from doms_databasen.scraper import DomsDatabasenScraper
 from omegaconf import DictConfig
-
-from src.doms_databasen.scraper import DomsDatabasenScraper
-
-# Importing as a module, doesn't work when running as a script?
-# from doms_databasen.scraper import DomsDatabasenScraper
 
 logger = logging.getLogger(__name__)
 
 
 @hydra.main(config_path="../../config", config_name="config")
 def main(config: DictConfig) -> None:
+    """Scrape the DomsDatabasen website.
+
+    Args:
+        config (DictConfig):
+            Hydra config object.
+
+    """
     scraper = DomsDatabasenScraper(config=config)
     if config.scrape.all:
         scraper.scrape_all()
