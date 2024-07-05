@@ -1,4 +1,4 @@
-<a href="https://github.com/alexandrainst/doms_databasen"><img src="gfx/alexandra_logo.png" width="239" height="175" align="right" /></a>
+<a href="https://github.com/alexandrainst/domsdatabasen"><img src="gfx/alexandra_logo.png" width="239" height="175" align="right" /></a>
 # Domsdatabasen
 
 Scraping og processering af [domsdatabasen](https://domsdatabasen.dk/#).
@@ -17,11 +17,11 @@ Se `src/scripts/process.py`.
 Se `src/scripts/finalize.py`.
 
 ______________________________________________________________________
-[![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexandrainst.github.io/doms_databasen/doms_databasen.html)
-[![License](https://img.shields.io/github/license/oliverkinch/doms_databasen)](https://github.com/alexandrainst/doms_databasen/blob/master/LICENSE)
-[![LastCommit](https://img.shields.io/github/last-commit/oliverkinch/doms_databasen)](https://github.com/alexandrainst/doms_databasen/commits/master)
-[![Code Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](https://github.com/alexandrainst/doms_databasen/tree/master/tests)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](https://github.com/alexandrainst/doms_databasen/blob/master/CODE_OF_CONDUCT.md)
+[![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexandrainst.github.io/domsdatabasen/domsdatabasen.html)
+[![License](https://img.shields.io/github/license/oliverkinch/domsdatabasen)](https://github.com/alexandrainst/domsdatabasen/blob/master/LICENSE)
+[![LastCommit](https://img.shields.io/github/last-commit/oliverkinch/domsdatabasen)](https://github.com/alexandrainst/domsdatabasen/commits/master)
+[![Code Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](https://github.com/alexandrainst/domsdatabasen/tree/master/tests)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](https://github.com/alexandrainst/domsdatabasen/blob/master/CODE_OF_CONDUCT.md)
 
 
 Developers:
@@ -38,11 +38,11 @@ Developers:
 
 
 ## A Word on Modules and Scripts
-In the `src` directory there are two subdirectories, `doms_databasen`
+In the `src` directory there are two subdirectories, `domsdatabasen`
 and `scripts`. This is a brief explanation of the differences between the two.
 
 ### Modules
-All Python files in the `doms_databasen` directory are _modules_
+All Python files in the `domsdatabasen` directory are _modules_
 internal to the project package. Examples here could be a general data loading script,
 a definition of a model, or a training function. Think of modules as all the building
 blocks of a project.
@@ -65,7 +65,7 @@ When importing module functions/classes when you're in a script, you do it like 
 would normally import from any other package:
 
 ```
-from doms_databasen import some_function
+from domsdatabasen import some_function
 ```
 
 Note that this is also how we import functions/classes in tests, since each test Python
@@ -90,7 +90,7 @@ for the repository (can be enabled on Github in the repository settings).
 Code Spaces is a new feature on Github, that allows you to develop on a project
 completely in the cloud, without having to do any local setup at all. This repo comes
 included with a configuration file for running code spaces on Github. When hosted on
-`alexandrainst/doms_databasen` then simply press the `<> Code` button
+`alexandrainst/domsdatabasen` then simply press the `<> Code` button
 and add a code space to get started, which will open a VSCode window directly in your
 browser.
 
@@ -130,7 +130,7 @@ browser.
 │   ├── scripts
 │   │   ├── fix_dot_env_file.py
 │   │   └── your_script.py
-│   └── doms_databasen
+│   └── domsdatabasen
 │       ├── __init__.py
 │       └── your_module.py
 └── tests

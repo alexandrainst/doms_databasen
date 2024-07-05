@@ -1,4 +1,4 @@
-"""Exceptions for the doms_databasen package."""
+"""Exceptions for the domsdatabasen package."""
 
 
 class PDFDownloadException(Exception):

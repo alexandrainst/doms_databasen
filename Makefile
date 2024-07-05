@@ -35,7 +35,7 @@ help:
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 install: ## Install dependencies
-	@echo "Installing the 'doms_databasen' project..."
+	@echo "Installing the 'domsdatabasen' project..."
 	@$(MAKE) --quiet install-brew
 	@$(MAKE) --quiet install-gpg
 	@$(MAKE) --quiet generate-gpg-key
@@ -45,7 +45,7 @@ install: ## Install dependencies
 	@$(MAKE) --quiet setup-environment-variables
 	@$(MAKE) --quiet setup-git
 	@$(MAKE) --quiet add-repo-to-git
-	@echo "Installed the 'doms_databasen' project. You can now activate your virtual environment with 'source .venv/bin/activate'."
+	@echo "Installed the 'domsdatabasen' project. You can now activate your virtual environment with 'source .venv/bin/activate'."
 	@echo "Note that this is a Poetry project. Use 'poetry add <package>' to install new dependencies and 'poetry remove <package>' to remove them."
 
 install-brew:
@@ -130,11 +130,11 @@ add-repo-to-git:
 		git commit --quiet -m "Initial commit"; \
 	fi
 	@if [ "$(shell git remote)" = "" ]; then \
-		git remote add origin git@github.com:alexandrainst/doms_databasen.git; \
+		git remote add origin git@github.com:alexandrainst/domsdatabasen.git; \
 	fi
 
 docs:  ## Generate documentation
-	@poetry run pdoc --docformat google src/doms_databasen -o docs
+	@poetry run pdoc --docformat google src/domsdatabasen -o docs
 	@echo "Saved documentation."
 
 view-docs:  ## View documentation
@@ -146,15 +146,15 @@ view-docs:  ## View documentation
 			(*CYGWIN*) openCmd='cygstart'; ;; \
 			(*) echo 'Error: Unsupported platform: $${uname}'; exit 2; ;; \
 		esac; \
-		"$${openCmd}" docs/doms_databasen.html
+		"$${openCmd}" docs/domsdatabasen.html
 
 test:
 	@poetry run pytest tests/scraper ; \
 	poetry run pytest tests/processor ; \
 
 docker:  ## Build Docker image and run container
-	@docker build -t doms_databasen .
-	@docker run -it --rm doms_databasen
+	@docker build -t domsdatabasen .
+	@docker run -it --rm domsdatabasen
 
 tree:  ## Print directory tree
 	@tree -a --gitignore -I .git .
