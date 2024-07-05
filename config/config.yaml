@@ -14,8 +14,8 @@ domsdatabasen:
 paths:
   hf_hub: alexandrainst/domsdatabasen
   data_raw_dir: data/raw/
-  data_processed_dir: data/processed
-  data_final_dir: data/final
+  data_processed_dir: data/processed/
+  data_final_dir: data/final/
 
 file_names:
   tabular_data: tabular_data.json
