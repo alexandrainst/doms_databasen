@@ -51,7 +51,7 @@ class Processor(PDFTextReader):
         )
 
         self.force = self.config.process.force
-        self.blacklist = self._read_blacklist()
+        self.blacklist = self._read_blacklist() if config.process.blacklist_flag else []
 
     def process(self, case_id: str) -> Dict[str, Union[str, Dict[str, str]]]:
         """Processes a single case.
