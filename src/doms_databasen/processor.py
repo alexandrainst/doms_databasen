@@ -6,6 +6,7 @@ from logging import getLogger
 from pathlib import Path
 from typing import Dict, List, Union
 
+import torch
 from omegaconf import DictConfig
 
 from ._constants import N_FILES_PROCESSED_CASE_DIR, N_FILES_RAW_CASE_DIR
@@ -109,7 +110,7 @@ class Processor(PDFTextReader):
         processed_data["pdf_data"] = pdf_data
         processed_data["process_info"] = {
             "process_time": str(time.time() - start),
-            "hardware_used": "gpu" if self.config.process.gpu else "cpu",
+            "hardware_used": "gpu" if torch.cuda.is_available() else "cpu",
         }
 
         if not self.config.testing:

@@ -10,6 +10,7 @@ import cv2
 import easyocr
 import numpy as np
 import skimage
+import torch
 from img2table.document import Image as TableImage
 from img2table.tables.objects.extraction import ExtractedTable, TableCell
 from omegaconf import DictConfig
@@ -49,7 +50,7 @@ class PDFTextReader:
     def __init__(self, config: DictConfig):
         """Initialize PDFTextReader."""
         self.config = config
-        self.reader = easyocr.Reader(["da"], gpu=config.process.gpu)
+        self.reader = easyocr.Reader(["da"], gpu=torch.cuda.is_available())
 
     def extract_text(self, pdf_path: Path) -> dict[Any, Any]:
         """Extracts text from a PDF using easyocr or pypdf.

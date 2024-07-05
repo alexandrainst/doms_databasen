@@ -15,8 +15,6 @@ test_case_id: "1"
 
 page_number: False # Debug a specific page
 
-gpu: False
-
 max_y_difference: 25
 
 neighbor_distance_max: 1
