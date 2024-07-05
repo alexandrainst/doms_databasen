@@ -68,6 +68,8 @@ class Processor(PDFTextReader):
             processed_data (dict):
                 Processed data (only returned for testing purposes)
         """
+        processed_data: Dict[str, Union[str, Dict[str, str]]] = {}
+
         case_id = str(case_id)
         if case_id in self.blacklist:
             logger.info(f"{case_id} is blacklisted.")
@@ -88,7 +90,10 @@ class Processor(PDFTextReader):
             logger.info(
                 f"Case {case_id} has already been processed. Use --force to overwrite."
             )
-            return {}
+            processed_data = read_json(
+                file_path=case_dir_processed / self.config.file_names.processed_data
+            )
+            return processed_data
 
         # Process data for the case.
         logger.info(f"Processing case {case_id}...")
@@ -99,7 +104,6 @@ class Processor(PDFTextReader):
             case_dir_raw / self.config.file_names.tabular_data
         )
 
-        processed_data: Dict[str, Union[str, Dict[str, str]]] = {}
         processed_data["case_id"] = case_id
         processed_data["tabular_data"] = tabular_data
 

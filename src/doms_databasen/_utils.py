@@ -1,7 +1,7 @@
 """Utility function for the doms_databasen package."""
 
 import json
-from typing import Dict, List
+from typing import List
 
 import jsonlines
 
@@ -19,7 +19,7 @@ def save_dict_to_json(dict_, file_path) -> None:
         json.dump(dict_, f, indent=4)
 
 
-def read_json(file_path) -> Dict[str, str]:
+def read_json(file_path) -> dict:
     """Reads a json file.
 
     Args:
