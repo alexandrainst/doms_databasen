@@ -6,6 +6,7 @@ from logging import getLogger
 from pathlib import Path
 from typing import Dict, List, Union
 
+import torch
 from omegaconf import DictConfig
 
 from ._constants import N_FILES_PROCESSED_CASE_DIR, N_FILES_RAW_CASE_DIR
@@ -51,7 +52,7 @@ class Processor(PDFTextReader):
         )
 
         self.force = self.config.process.force
-        self.blacklist = self._read_blacklist()
+        self.blacklist = self._read_blacklist() if config.process.blacklist_flag else []
 
     def process(self, case_id: str) -> Dict[str, Union[str, Dict[str, str]]]:
         """Processes a single case.
@@ -67,6 +68,8 @@ class Processor(PDFTextReader):
             processed_data (dict):
                 Processed data (only returned for testing purposes)
         """
+        processed_data: Dict[str, Union[str, Dict[str, str]]] = {}
+
         case_id = str(case_id)
         if case_id in self.blacklist:
             logger.info(f"{case_id} is blacklisted.")
@@ -78,16 +81,19 @@ class Processor(PDFTextReader):
         case_dir_processed = self.data_processed_dir / case_id
 
         # Check if raw data for case ID exists.
-        if not self._raw_data_exists(case_dir_raw):
+        if not self._raw_data_exists(case_dir=case_dir_raw):
             logger.info(f"Case {case_id} does not exist in raw data directory.")
             return {}
 
         # If case has already been processed, skip, unless force=True.
-        if self._already_processed(case_dir_processed) and not self.force:
+        if self._already_processed(case_dir=case_dir_processed) and not self.force:
             logger.info(
                 f"Case {case_id} has already been processed. Use --force to overwrite."
             )
-            return {}
+            processed_data = read_json(
+                file_path=case_dir_processed / self.config.file_names.processed_data
+            )
+            return processed_data
 
         # Process data for the case.
         logger.info(f"Processing case {case_id}...")
@@ -98,7 +104,6 @@ class Processor(PDFTextReader):
             case_dir_raw / self.config.file_names.tabular_data
         )
 
-        processed_data: Dict[str, Union[str, Dict[str, str]]] = {}
         processed_data["case_id"] = case_id
         processed_data["tabular_data"] = tabular_data
 
@@ -109,7 +114,7 @@ class Processor(PDFTextReader):
         processed_data["pdf_data"] = pdf_data
         processed_data["process_info"] = {
             "process_time": str(time.time() - start),
-            "hardware_used": "gpu" if self.config.process.gpu else "cpu",
+            "hardware_used": "gpu" if torch.cuda.is_available() else "cpu",
         }
 
         if not self.config.testing:

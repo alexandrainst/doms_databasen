@@ -116,3 +116,5 @@ models/*
 
 # Hydra
 .hydra/
+
+*notes.md

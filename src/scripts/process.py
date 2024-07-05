@@ -35,7 +35,7 @@ def main(config: DictConfig) -> None:
     if config.process.all:
         processor.process_all()
     elif config.process.case_id:
-        processor.process(config.process.case_id)
+        processor.process(case_id=config.process.case_id)
     else:
         logger.info(
             "Please specify either a 'case_id' or use 'all' to process all cases."

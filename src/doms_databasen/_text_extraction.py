@@ -10,6 +10,7 @@ import cv2
 import easyocr
 import numpy as np
 import skimage
+import torch
 from img2table.document import Image as TableImage
 from img2table.tables.objects.extraction import ExtractedTable, TableCell
 from omegaconf import DictConfig
@@ -19,6 +20,7 @@ from skimage import measure
 from skimage.filters import rank
 from skimage.measure._regionprops import RegionProperties
 from tika import parser
+from tqdm import tqdm
 
 from ._constants import (
     BOX_HEIGHT_LOWER_BOUND,
@@ -48,7 +50,7 @@ class PDFTextReader:
     def __init__(self, config: DictConfig):
         """Initialize PDFTextReader."""
         self.config = config
-        self.reader = easyocr.Reader(["da"], gpu=config.process.gpu)
+        self.reader = easyocr.Reader(["da"], gpu=torch.cuda.is_available())
 
     def extract_text(self, pdf_path: Path) -> dict[Any, Any]:
         """Extracts text from a PDF using easyocr or pypdf.
@@ -82,7 +84,7 @@ class PDFTextReader:
         box_anonymization = True
         underline_anonymization = True
 
-        for i, image in enumerate(images):
+        for i, image in tqdm(enumerate(images), desc="Reading PDF", total=len(images)):
             page_num = str(i + 1)
             logger.info(f"Reading page {page_num}")
 
