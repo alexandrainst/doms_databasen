@@ -11,11 +11,9 @@ from omegaconf import DictConfig
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 
 from ._constants import N_FILES_RAW_CASE_DIR
 from ._exceptions import PDFDownloadException
@@ -165,9 +163,7 @@ class Scraper:
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--headless")
 
-        driver = webdriver.Chrome(
-            service=ChromeService(ChromeDriverManager().install()), options=options
-        )
+        driver = webdriver.Chrome(options=options)
         return driver
 
     def _intialize_downloader_folder(self) -> None:
