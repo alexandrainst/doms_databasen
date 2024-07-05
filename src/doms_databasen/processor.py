@@ -79,12 +79,12 @@ class Processor(PDFTextReader):
         case_dir_processed = self.data_processed_dir / case_id
 
         # Check if raw data for case ID exists.
-        if not self._raw_data_exists(case_dir_raw):
+        if not self._raw_data_exists(case_dir=case_dir_raw):
             logger.info(f"Case {case_id} does not exist in raw data directory.")
             return {}
 
         # If case has already been processed, skip, unless force=True.
-        if self._already_processed(case_dir_processed) and not self.force:
+        if self._already_processed(case_dir=case_dir_processed) and not self.force:
             logger.info(
                 f"Case {case_id} has already been processed. Use --force to overwrite."
             )
