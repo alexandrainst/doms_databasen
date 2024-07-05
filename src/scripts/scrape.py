@@ -17,7 +17,7 @@ Examples usages:
 import logging
 
 import hydra
-from doms_databasen.scraper import Scraper
+from domsdatabasen.scraper import Scraper
 from omegaconf import DictConfig
 
 logger = logging.getLogger(__name__)

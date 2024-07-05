@@ -8,7 +8,7 @@ from typing import Tuple
 
 from omegaconf import DictConfig
 
-from doms_databasen._utils import append_jsonl, init_jsonl, read_json
+from domsdatabasen._utils import append_jsonl, init_jsonl, read_json
 
 logger = getLogger(__name__)
 

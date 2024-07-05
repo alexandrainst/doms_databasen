@@ -29,7 +29,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build documentation
-        run: pip install pdoc==7.3.0 && pdoc --docformat google src/doms_databasen -o docs
+        run: pip install pdoc==7.3.0 && pdoc --docformat google src/domsdatabasen -o docs
 
       - name: Compress documentation
         run: tar --directory docs/ -hcf artifact.tar .

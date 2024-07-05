@@ -173,7 +173,7 @@ class Processor(PDFTextReader):
         and contains two files: the PDF document and the tabular data.
 
         Same code as the method `_already_scraped` from class `Scraper`
-        (src/doms_databasen/scraper.py).
+        (src/domsdatabasen/scraper.py).
 
         Args:
             case_dir (Path):

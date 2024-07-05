@@ -11,7 +11,7 @@ Usage:
 
 
 import hydra
-from doms_databasen.dataset_builder import DatasetBuilder
+from domsdatabasen.dataset_builder import DatasetBuilder
 from omegaconf import DictConfig
 
 

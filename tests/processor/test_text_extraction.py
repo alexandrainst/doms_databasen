@@ -3,7 +3,7 @@
 import cv2
 import numpy as np
 import pytest
-from doms_databasen._text_extraction import PDFTextReader
+from domsdatabasen._text_extraction import PDFTextReader
 from PIL import Image
 
 
