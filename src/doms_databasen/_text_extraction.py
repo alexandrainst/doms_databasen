@@ -19,6 +19,7 @@ from skimage import measure
 from skimage.filters import rank
 from skimage.measure._regionprops import RegionProperties
 from tika import parser
+from tqdm import tqdm
 
 from ._constants import (
     BOX_HEIGHT_LOWER_BOUND,
@@ -82,7 +83,7 @@ class PDFTextReader:
         box_anonymization = True
         underline_anonymization = True
 
-        for i, image in enumerate(images):
+        for i, image in tqdm(enumerate(images), desc="Reading PDF", total=len(images)):
             page_num = str(i + 1)
             logger.info(f"Reading page {page_num}")
 
