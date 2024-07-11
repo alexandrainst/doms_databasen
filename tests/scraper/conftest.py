@@ -3,7 +3,7 @@
 import shutil
 
 import pytest
-from domsdatabasen.scraper import Scraper
+from domsdatabasen import Scraper
 from hydra import compose, initialize
 
 # Initialise Hydra

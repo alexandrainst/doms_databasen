@@ -2,7 +2,7 @@
 
 
 import pytest
-from domsdatabasen.processor import Processor
+from domsdatabasen import Processor
 
 
 @pytest.fixture(scope="module")
