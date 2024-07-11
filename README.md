@@ -18,10 +18,10 @@ Se `src/scripts/finalize.py`.
 
 ______________________________________________________________________
 [![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexandrainst.github.io/domsdatabasen/domsdatabasen.html)
-[![License](https://img.shields.io/github/license/oliverkinch/domsdatabasen)](https://github.com/alexandrainst/domsdatabasen/blob/master/LICENSE)
-[![LastCommit](https://img.shields.io/github/last-commit/oliverkinch/domsdatabasen)](https://github.com/alexandrainst/domsdatabasen/commits/master)
-[![Code Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](https://github.com/alexandrainst/domsdatabasen/tree/master/tests)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](https://github.com/alexandrainst/domsdatabasen/blob/master/CODE_OF_CONDUCT.md)
+[![License](https://img.shields.io/github/license/oliverkinch/domsdatabasen)](https://github.com/alexandrainst/domsdatabasen/blob/main/LICENSE)
+[![LastCommit](https://img.shields.io/github/last-commit/oliverkinch/domsdatabasen)](https://github.com/alexandrainst/domsdatabasen/commits/main)
+[![Code Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](https://github.com/alexandrainst/domsdatabasen/tree/main/tests)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](https://github.com/alexandrainst/domsdatabasen/blob/main/CODE_OF_CONDUCT.md)
 
 
 Developers:
