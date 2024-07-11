@@ -5,7 +5,7 @@ Scraping og processering af [domsdatabasen](https://domsdatabasen.dk/#).
 
 Hver enkelt dom kan tilgås via https://domsdatabasen.dk/#sag/\<nummer\>, hvor \<nummer\> er mellem 1 og 3821 (pr. 11-10-2023).
 
-Datasættet ligger i en processeret udgave på [Huggingface](https://huggingface.co/datasets/oliverkinch/domsdatabasen).
+Datasættet ligger i en processeret udgave på [Huggingface](https://huggingface.co/datasets/alexandrainst/domsdatabasen).
 
 ## Scraping af sager
 Se `src/scripts/scrape.py`.
@@ -18,8 +18,8 @@ Se `src/scripts/finalize.py`.
 
 ______________________________________________________________________
 [![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexandrainst.github.io/domsdatabasen/domsdatabasen.html)
-[![License](https://img.shields.io/github/license/oliverkinch/domsdatabasen)](https://github.com/alexandrainst/domsdatabasen/blob/master/LICENSE)
-[![LastCommit](https://img.shields.io/github/last-commit/oliverkinch/domsdatabasen)](https://github.com/alexandrainst/domsdatabasen/commits/master)
+[![License](https://img.shields.io/github/license/alexandrainst/domsdatabasen)](https://github.com/alexandrainst/domsdatabasen/blob/master/LICENSE)
+[![LastCommit](https://img.shields.io/github/last-commit/alexandrainst/domsdatabasen)](https://github.com/alexandrainst/domsdatabasen/commits/master)
 [![Code Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](https://github.com/alexandrainst/domsdatabasen/tree/master/tests)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](https://github.com/alexandrainst/domsdatabasen/blob/master/CODE_OF_CONDUCT.md)
 
