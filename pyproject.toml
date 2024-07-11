@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "domsdatabasen"
 description = "Scraper and PDF text processor for domsdatabasen.dk"
-version = "0.1.0"
+version = "0.1.2"
 authors = [
     "Oliver Kinch <oliver.kinch@alexandra.dk>",
 ]
